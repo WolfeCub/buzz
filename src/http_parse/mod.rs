@@ -137,7 +137,9 @@ fn parse_http_path(line: &str) -> Result<(String, &str), HttpParseError> {
 }
 
 fn parse_http_version(line: &str) -> Result<(f64, &str), HttpParseError> {
-    if &line[..5] != "HTTP/" {
+    let bytes = line.as_bytes();
+
+    if bytes.len() < 5 || &bytes[..5] != b"HTTP/" {
         return Err(HttpParseError::VersionText(
             "Version did not start with 'HTTP/'".to_owned(),
         ));
@@ -146,7 +148,9 @@ fn parse_http_version(line: &str) -> Result<(f64, &str), HttpParseError> {
     let mut pos = 5;
     let mut read_dot = false;
 
-    for c in line[pos..].chars() {
+    for char_byte in &bytes[pos..] {
+        let c = *char_byte as char;
+
         if c.is_ascii_whitespace() {
             break;
         }
@@ -172,10 +176,12 @@ fn parse_http_version(line: &str) -> Result<(f64, &str), HttpParseError> {
         return Err(HttpParseError::Path("Empty version found".to_owned()));
     }
 
+    unsafe {
     Ok((
-        line[5..pos].parse().map_err(HttpParseError::VersionParse)?,
-        &line[pos..],
+        std::str::from_utf8_unchecked(&bytes[5..pos]).parse().map_err(HttpParseError::VersionParse)?,
+        std::str::from_utf8_unchecked(&bytes[pos..]),
     ))
+    }
 }
 
 #[cfg(test)]
