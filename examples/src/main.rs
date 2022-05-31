@@ -23,7 +23,7 @@ fn empty() -> impl Respond {
 
 #[get("/other")]
 fn other() -> impl Respond {
-    Result::<(), _>::Err(std::fmt::Error::default());
+    Result::<(), _>::Err(std::fmt::Error::default())
 }
 
 fn main() {

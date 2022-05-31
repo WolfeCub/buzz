@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 buzz = { path = "../buzz" }
-buzz_macro = { path = "../buzz_macro" }
+buzz_macro = { path = "../buzz-macro" }

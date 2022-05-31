@@ -2,6 +2,6 @@
 
 members = [
     "buzz",
-    "buzz_macro",
-    "buzz_bin",
+    "buzz-macro",
+    "examples",
 ]
