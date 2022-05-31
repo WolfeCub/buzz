@@ -4,17 +4,32 @@ use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
 
-pub use linkme;
-pub mod types;
-
-use types::*;
-
 mod http_parse;
 use http_parse::*;
 
+pub mod types;
+use types::*;
+
+pub mod dev {
+    pub use linkme;
+}
+
+pub mod prelude {
+    use linkme;
+    use super::types::HttpService;
+
+    pub use super::*;
+
+    #[linkme::distributed_slice]
+    pub static BUZZ_REGISTRY: [HttpService] = [..];
+}
+
+use prelude::*;
+
+/* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {
     addr: &'static str,
-    handlers: HashMap<&'static str, HttpService>,
+    handlers: HashMap<(&'static str, &'static str), HttpService>,
 }
 
 impl Buzz {
@@ -25,8 +40,12 @@ impl Buzz {
         }
     }
 
-    pub fn with_attributes(mut self, registry: &'static [HttpService]) -> Self {
-        self.handlers = HashMap::from_iter(registry.iter().map(|serv| (serv.path, *serv)));
+    pub fn with_attributes(mut self) -> Self {
+        self.handlers = HashMap::from_iter(
+            BUZZ_REGISTRY
+                .iter()
+                .map(|serv| ((serv.path, serv.method), *serv)),
+        );
 
         self
     }
@@ -51,7 +70,10 @@ impl Buzz {
 
         let request = parse_http(&buffer)?;
 
-        let response = match self.handlers.get(request.path.as_str()) {
+        let response = match self
+            .handlers
+            .get(&(request.path.as_str(), &request.method.to_string()))
+        {
             Some(service) => HttpResponse::new(HttpStatusCode::Ok).body((service.handler)()),
             None => HttpResponse::new(HttpStatusCode::NotFound),
         };
