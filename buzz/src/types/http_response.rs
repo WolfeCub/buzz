@@ -37,14 +37,18 @@ impl HttpResponse {
 #[derive(Debug, Clone, Copy)]
 pub enum HttpStatusCode {
     Ok,
+    NoContent,
     NotFound,
+    InternalServerError,
 }
 
 impl ToString for HttpStatusCode {
     fn to_string(&self) -> String {
         match self {
             Self::Ok => "OK",
+            Self::NoContent => "No Content",
             Self::NotFound => "Not Found",
+            Self::InternalServerError => "Internal Server Error",
         }
         .to_owned()
     }
@@ -53,6 +57,8 @@ impl ToString for HttpStatusCode {
 pub fn to_status_num(e: HttpStatusCode) -> u32 {
     match e {
         HttpStatusCode::Ok => 200,
+        HttpStatusCode::NoContent => 204,
         HttpStatusCode::NotFound => 404,
+        HttpStatusCode::InternalServerError => 500,
     }
 }
