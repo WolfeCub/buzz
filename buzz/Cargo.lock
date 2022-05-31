@@ -35,22 +35,9 @@ version = "0.1.0"
 dependencies = [
  "proptest",
  "proptest-derive",
- "thiserror",
-]
-
-[[package]]
-name = "buzz_bin"
-version = "0.1.0"
-dependencies = [
- "buzz",
-]
-
-[[package]]
-name = "buzz_macro"
-version = "0.1.0"
-dependencies = [
  "quote 1.0.18",
  "syn 1.0.95",
+ "thiserror",
 ]
 
 [[package]]

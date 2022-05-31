@@ -1,11 +1,7 @@
-[package]
-name = "buzz"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-[dependencies]
-thiserror = "1.0"
-
-[dev-dependencies]
-proptest = "1"
-proptest-derive = "0.3"
+members = [
+    "buzz",
+    "buzz_macro",
+    "buzz_bin",
+]
