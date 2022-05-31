@@ -8,6 +8,9 @@ use std::net::TcpStream;
 mod http_parse;
 use http_parse::*;
 
+mod http_response;
+use http_response::*;
+
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
 
@@ -28,56 +31,16 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
 
     let request = parse_http(&buffer)?;
 
-    let resp_data: &[u8] = "<h1>Hello there</h1>".as_bytes();
+    let resp_data = "<h1>Hello there</h1>".to_owned();
 
-    let mut headers = HashMap::new();
+    let response = HttpResponse::new(HttpStatusCode::Ok).body(resp_data);
 
-    headers.insert("Server".to_owned(), "buzz".to_owned());
-    headers.insert("Content-Length".to_owned(), resp_data.len().to_string());
-
-    let response = HttpResponse {
-        status_code: HttpStatusCode::Ok,
-        headers: headers,
-        body: resp_data,
-        ..Default::default()
-    };
-
-    write_response(&mut stream, response)?;
+    write_response(&mut stream, &response)?;
 
     stream.flush()?;
     stream.shutdown(std::net::Shutdown::Both)?;
 
     Ok(())
-}
-
-struct HttpResponse<'a> {
-    status_code: HttpStatusCode,
-    headers: HashMap<String, String>,
-    body: &'a [u8],
-}
-
-impl<'a> Default for HttpResponse<'a> {
-    fn default() -> Self {
-        Self {
-            status_code: HttpStatusCode::Ok,
-            headers: Default::default(),
-            body: Default::default(),
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-enum HttpStatusCode {
-    Ok,
-}
-
-impl ToString for HttpStatusCode {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Ok => "OK",
-        }
-        .to_owned()
-    }
 }
 
 fn to_status_num(e: HttpStatusCode) -> u32 {
@@ -86,7 +49,7 @@ fn to_status_num(e: HttpStatusCode) -> u32 {
     }
 }
 
-fn write_response(stream: &mut TcpStream, request: HttpResponse) -> std::io::Result<()> {
+fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Result<()> {
     /* TODO: Not hardcoded version. What do we actually support? */
     stream.write(
         format!(
@@ -97,14 +60,16 @@ fn write_response(stream: &mut TcpStream, request: HttpResponse) -> std::io::Res
         .as_bytes(),
     )?;
 
-    for (key, value) in request.headers {
+    for (key, value) in &request.headers {
         stream.write(format!("{}: {}\r\n", key, value).as_bytes())?;
     }
 
     stream.write(b"\r\n")?;
 
     /* TODO: Buffer? */
-    stream.write(request.body)?;
+    if let Some(body) = &request.body {
+        stream.write(body.as_bytes())?;
+    }
 
     Ok(())
 }
