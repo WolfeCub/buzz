@@ -4,5 +4,6 @@ pub use http_method::*;
 mod http_response;
 pub use http_response::*;
 
-mod http_service;
-pub use http_service::*;
+pub mod route_metadata;
+
+pub mod traits;

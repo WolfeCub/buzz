@@ -4,15 +4,10 @@ mod buzz;
 pub mod types;
 
 pub mod dev {
-    pub use linkme;
+    pub use super::types::route_metadata::*;
 }
 
 pub mod prelude {
-    use linkme;
-    use super::types::HttpService;
-
     pub use super::buzz::*;
-
-    #[linkme::distributed_slice]
-    pub static BUZZ_REGISTRY: [HttpService] = [..];
+    pub use super::types::traits::Respond;
 }

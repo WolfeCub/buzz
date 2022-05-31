@@ -6,4 +6,3 @@ edition = "2021"
 [dependencies]
 buzz = { path = "../buzz" }
 buzz_macro = { path = "../buzz_macro" }
-linkme = "0.2.10"

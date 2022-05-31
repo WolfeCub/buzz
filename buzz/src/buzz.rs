@@ -4,14 +4,15 @@ use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
 
-use crate::types::*;
+use route_metadata::RouteMetadata;
+
 use crate::http_parse::*;
-use crate::prelude::*;
+use crate::types::*;
 
 /* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {
     addr: &'static str,
-    handlers: HashMap<(&'static str, &'static str), HttpService>,
+    handlers: HashMap<RouteMetadata<'static>, fn() -> HttpResponse>,
 }
 
 impl Buzz {
@@ -22,13 +23,8 @@ impl Buzz {
         }
     }
 
-    pub fn with_attributes(mut self) -> Self {
-        self.handlers = HashMap::from_iter(
-            BUZZ_REGISTRY
-                .iter()
-                .map(|serv| ((serv.path, serv.method), *serv)),
-        );
-
+    pub fn route(mut self, route: (fn() -> HttpResponse, RouteMetadata<'static>)) -> Self {
+        self.handlers.insert(route.1, route.0);
         self
     }
 
@@ -52,11 +48,12 @@ impl Buzz {
 
         let request = parse_http(&buffer)?;
 
-        let response = match self
-            .handlers
-            .get(&(request.path.as_str(), &request.method.to_string()))
-        {
-            Some(service) => HttpResponse::new(HttpStatusCode::Ok).body((service.handler)()),
+        let metadata = RouteMetadata {
+            method: &request.method.to_string(),
+            path: &request.path,
+        };
+        let response = match self.handlers.get(&metadata) {
+            Some(handler) => handler(),
             None => HttpResponse::new(HttpStatusCode::NotFound),
         };
 

@@ -18,7 +18,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn consume(&mut self, n: usize) {
+    pub fn _consume(&mut self, n: usize) {
         self.offset += n;
     }
 

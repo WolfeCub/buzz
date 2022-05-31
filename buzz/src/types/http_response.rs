@@ -21,11 +21,17 @@ impl HttpResponse {
         }
     }
 
+    pub fn status(mut self, code: HttpStatusCode) -> Self {
+        self.status_code = code;
+        self
+    }
+
     pub fn body(mut self, body: String) -> Self {
         self.headers.insert("Content-Length".to_owned(), body.len().to_string());
         self.body = Some(body);
         self
     }
+
 }
 
 #[derive(Debug, Clone, Copy)]
