@@ -17,11 +17,13 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(stream);
+    let mut buffer = [0; 1024];
 
-    match parse_http(buf_reader.lines().map(|l| l.unwrap())) {
-        Ok(_) => {}
+    match stream.read(&mut buffer) {
+        Ok(_) => {
+            dbg!(std::str::from_utf8(&buffer).unwrap());
+            dbg!(parse_http(&buffer));
+        },
         Err(e) => panic!("{}", e),
     }
 }
-
