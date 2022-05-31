@@ -1,8 +1,14 @@
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 use thiserror::Error;
 
+mod parser;
+use parser::*;
+
+mod http_method;
+use http_method::*;
+
 #[cfg(test)]
-use proptest_derive::Arbitrary;
+mod tests;
 
 #[derive(Error, Debug)]
 pub enum HttpParseError {
@@ -22,47 +28,6 @@ pub enum HttpParseError {
     Header(String),
 }
 
-#[cfg_attr(test, derive(Arbitrary))]
-#[derive(Debug, PartialEq, Eq)]
-pub enum HttpMethod {
-    Get,
-    Put,
-    Post,
-    Delete,
-    Patch,
-    Options,
-}
-
-impl ToString for HttpMethod {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Get => "GET",
-            Self::Put => "PUT",
-            Self::Post => "POST",
-            Self::Delete => "DELETE",
-            Self::Patch => "PATCH",
-            Self::Options => "OPTIONS",
-        }
-        .to_string()
-    }
-}
-
-impl FromStr for HttpMethod {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "GET" => Ok(HttpMethod::Get),
-            "PUT" => Ok(HttpMethod::Put),
-            "POST" => Ok(HttpMethod::Post),
-            "DELETE" => Ok(HttpMethod::Delete),
-            "PATCH" => Ok(HttpMethod::Patch),
-            "OPTIONS" => Ok(HttpMethod::Options),
-            _ => Err(()),
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct HttpRequest {
     pub method: HttpMethod,
@@ -71,70 +36,6 @@ pub struct HttpRequest {
     pub headers: HashMap<String, String>,
 }
 
-#[derive(Debug)]
-struct Parser<'a> {
-    data: &'a [u8],
-    offset: usize,
-}
-
-impl<'a> Parser<'a> {
-    fn new(data: &'a [u8]) -> Self {
-        Self { data, offset: 0 }
-    }
-
-    fn peek(&self) -> Option<u8> {
-        if self.offset >= self.data.len() {
-            None
-        } else {
-            let r = self.data[self.offset];
-            Some(r)
-        }
-    }
-
-    fn consume(&mut self, n: usize) {
-        self.offset += n;
-    }
-
-    fn consume_while(&mut self, predicate: fn(u8) -> bool) {
-        while let Some(_) = self.take_if(predicate) {}
-    }
-
-    fn take(&mut self) -> Option<u8> {
-        let r = self.peek();
-        if r.is_some() {
-            self.offset += 1;
-        }
-        r
-    }
-
-    fn take_n(&mut self, n: usize) -> Option<&[u8]> {
-        if self.offset + n <= self.data.len() {
-            let r = Some(&self.data[self.offset..self.offset + n]);
-            self.offset += n;
-            r
-        } else {
-            None
-        }
-    }
-
-    fn take_if(&mut self, predicate: fn(u8) -> bool) -> Option<u8> {
-        let r = self.peek();
-        if r.is_some() && r.map(predicate).unwrap() {
-            self.offset += 1;
-            r
-        } else {
-            None
-        }
-    }
-
-    fn substr_to_offset(&self, starting: usize) -> &str {
-        self.substr(starting, self.offset)
-    }
-
-    fn substr(&self, starting: usize, ending: usize) -> &str {
-        unsafe { std::str::from_utf8_unchecked(&self.data[starting..ending]) }
-    }
-}
 
 pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
     let mut parser = Parser::new(request);
@@ -148,12 +49,12 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
         headers.insert(key.to_owned(), val.to_owned());
     }
 
-    Ok(dbg!(HttpRequest {
+    Ok(HttpRequest {
         method,
         path,
         version,
         headers,
-    }))
+    })
 }
 
 fn parse_http_method<'a>(parser: &mut Parser<'a>) -> Result<HttpMethod, HttpParseError> {
@@ -228,11 +129,6 @@ fn parse_http_version<'a>(parser: &mut Parser<'a>) -> Result<f64, HttpParseError
     let start_of_version = parser.offset;
 
     parser.consume_while(|c| c != b'\r');
-
-    dbg!(
-        std::str::from_utf8(&parser.data[parser.offset..parser.offset + 2]),
-        parser.offset
-    );
 
     if !eat_newline(parser) {
         return Err(HttpParseError::Path(
@@ -316,114 +212,4 @@ fn eat_newline<'a>(parser: &mut Parser<'a>) -> bool {
     return network_newline.is_some() && network_newline.unwrap() == b"\r\n";
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use proptest::prelude::*;
 
-    #[test]
-    fn debug() {
-        let format = "\r\n";
-        let mut parser = Parser::new(format.as_bytes());
-
-        dbg!(parse_http_header(&mut parser));
-    }
-
-    proptest! {
-        #[test]
-        fn parses_valid_http_methods(test_method: HttpMethod) {
-            let format = format!("{} / HTTP/1.1", test_method.to_string());
-
-            let mut parser = Parser::new(format.as_bytes());
-            let result = parse_http_method(&mut parser);
-
-            assert!(result.is_ok());
-
-            assert_eq!(result.unwrap(), test_method);
-            assert_eq!(parser.offset - 1, test_method.to_string().len());
-        }
-
-        #[test]
-        fn fails_parses_random_http_methods(method: String) {
-            let format = format!("{method} / HTTP/1.1");
-            let mut parser = Parser::new(format.as_bytes());
-            let result = parse_http_method(&mut parser);
-
-            assert!(result.is_err());
-        }
-
-        #[test]
-        fn parses_valid_paths(test_path in "/[A-Za-z0-9-._~!$&'()*+,;=:@%?]+") {
-            let format = format!("{test_path} HTTP/1.1");
-
-            let mut parser = Parser::new(format.as_bytes());
-            let result = parse_http_path(&mut parser);
-
-            assert!(result.is_ok());
-
-            assert_eq!(result.unwrap(), test_path);
-            assert_eq!(parser.offset - 1, test_path.len());
-        }
-
-        #[test]
-        fn fails_parses_invalid_paths(test_path in "[A-Z]+[ ]+[A-Z]+") {
-            let format = format!("{test_path} HTTP/1.1");
-
-            let mut parser = Parser::new(format.as_bytes());
-            let result = parse_http_path(&mut parser);
-
-            assert!(result.is_ok());
-
-            assert_ne!(result.unwrap(), test_path);
-            assert_ne!(parser.offset - 1, test_path.len());
-        }
-
-        #[test]
-        fn parses_valid_versions(test_version in "[0-9]{1,10}\\.[0-9]{1,10}") {
-            let format = format!("HTTP/{test_version}\r\n");
-
-            let mut parser = Parser::new(format.as_bytes());
-            let result = parse_http_version(&mut parser);
-
-            assert!(result.is_ok());
-
-            let version = result.unwrap();
-            assert_eq!(version, test_version.parse().unwrap());
-            assert_eq!(parser.offset, parser.data.len());
-        }
-
-        #[test]
-        fn fails_parses_invalid_versions(test_version: String) {
-            let mut parser = Parser::new(test_version.as_bytes());
-            let result = parse_http_version(&mut parser);
-
-            assert!(result.is_err());
-        }
-
-        #[test]
-        fn parses_valid_headers(test_key in "[A-Za-z-_]+", test_value in r#"[A-Za-z-_:;.,\\/"'?!(){}\[\]@<>=-\\+*#$&`|~\\^%]+"#) {
-            let format = format!("{test_key}: {test_value}\r\n");
-
-            let mut parser = Parser::new(format.as_bytes());
-            let result = parse_http_header(&mut parser);
-
-            assert!(result.is_ok());
-
-            let option = result.unwrap();
-
-            assert!(option.is_some());
-
-            let (key, value) = option.unwrap();
-            assert_eq!(key, test_key);
-            assert_eq!(value, test_value);
-        }
-
-        #[test]
-        fn fails_parses_invalid_headers(header in "[^:^\r^\n]+") {
-            let mut parser = Parser::new(header.as_bytes());
-            let result = parse_http_header(&mut parser);
-
-            assert!(result.is_err());
-        }
-    }
-}
