@@ -3,7 +3,7 @@ name = "buzz_bin"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 buzz = { path = "../buzz" }
+buzz_macro = { path = "../buzz_macro" }
+linkme = "0.2.10"

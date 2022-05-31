@@ -1,53 +1,67 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::io::prelude::*;
-use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
 
+pub use linkme;
+pub mod types;
+
+use types::*;
+
 mod http_parse;
-mod http_response;
-
 use http_parse::*;
-use http_response::*;
 
-/* TODO: this should be a server builder */
-pub fn run_server() {
-    let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
+pub struct Buzz {
+    addr: &'static str,
+    handlers: HashMap<&'static str, HttpService>,
+}
 
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
-
-        match handle_connection(stream) {
-            Ok(_) => {}
-            Err(e) => panic!("{}", e),
+impl Buzz {
+    pub fn new(addr: &'static str) -> Self {
+        Self {
+            addr,
+            handlers: HashMap::new(),
         }
     }
-}
-    
 
-fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
-    let mut buffer = [0; 1024];
+    pub fn with_attributes(mut self, registry: &'static [HttpService]) -> Self {
+        self.handlers = HashMap::from_iter(registry.iter().map(|serv| (serv.path, *serv)));
 
-    stream.read(&mut buffer)?;
+        self
+    }
 
-    let request = parse_http(&buffer)?;
+    pub fn run_server(&self) {
+        let listener = TcpListener::bind(self.addr).unwrap();
 
-    let resp_data = "<h1>Hello there</h1>".to_owned();
+        for stream in listener.incoming() {
+            let stream = stream.unwrap();
 
-    let response = HttpResponse::new(HttpStatusCode::Ok).body(resp_data);
+            match self.handle_connection(stream) {
+                Ok(_) => {}
+                Err(e) => panic!("{}", e),
+            }
+        }
+    }
 
-    write_response(&mut stream, &response)?;
+    fn handle_connection(&self, mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
+        let mut buffer = [0; 1024];
 
-    stream.flush()?;
-    stream.shutdown(std::net::Shutdown::Both)?;
+        stream.read(&mut buffer)?;
 
-    Ok(())
-}
+        let request = parse_http(&buffer)?;
 
-fn to_status_num(e: HttpStatusCode) -> u32 {
-    match e {
-        HttpStatusCode::Ok => 200,
+        let response = match self.handlers.get(request.path.as_str()) {
+            Some(service) => HttpResponse::new(HttpStatusCode::Ok).body((service.handler)()),
+            None => HttpResponse::new(HttpStatusCode::NotFound),
+        };
+
+        write_response(&mut stream, &response)?;
+
+        stream.flush()?;
+        stream.shutdown(std::net::Shutdown::Both)?;
+
+        Ok(())
     }
 }
 
@@ -72,6 +86,7 @@ fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Re
     if let Some(body) = &request.body {
         stream.write(body.as_bytes())?;
     }
+    stream.flush()?;
 
     Ok(())
 }

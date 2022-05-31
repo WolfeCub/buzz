@@ -4,8 +4,7 @@ use thiserror::Error;
 mod parser;
 use parser::*;
 
-mod http_method;
-use http_method::*;
+use crate::types::*;
 
 #[cfg(test)]
 mod tests;
@@ -109,7 +108,7 @@ fn parse_http_path<'a>(parser: &mut Parser<'a>) -> Result<String, HttpParseError
 fn parse_http_version<'a>(parser: &mut Parser<'a>) -> Result<f64, HttpParseError> {
     let starting_pos = parser.offset;
 
-    for i in 0..5 {
+    for _ in 0..5 {
         match parser.take() {
             Some(_) => {}
             None => {
