@@ -21,3 +21,15 @@ jobs:
 
       - name: Build release
         run: cargo build --release
+
+      - name: Build docs
+        run: cargo doc --no-deps --workspace --exclude buzz-examples
+
+      - name: Add index.html
+        run: echo '<meta http-equiv=refresh content=0;url=buzz/index.html>' > target/doc/index.html
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages
+          folder: target/doc/
