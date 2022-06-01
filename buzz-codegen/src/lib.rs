@@ -44,7 +44,7 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
         }
 
         #[allow(non_upper_case_globals)]
-        static #metadata_name: buzz::dev::RouteMetadata = buzz::dev::RouteMetadata {
+        static #metadata_name: buzz::types::RouteMetadata = buzz::types::RouteMetadata {
             method: #method,
             path: #path,
         };

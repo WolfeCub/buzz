@@ -1,9 +1,5 @@
 use std::str::FromStr;
 
-#[cfg(test)]
-use proptest_derive::Arbitrary;
-
-#[cfg_attr(test, derive(Arbitrary))]
 #[derive(Debug, PartialEq, Eq)]
 pub enum HttpMethod {
     Get,

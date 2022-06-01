@@ -1,5 +1,4 @@
 use buzz::prelude::*;
-use buzz_macro::*;
 
 #[get("/foo")]
 fn foo() -> impl Respond {

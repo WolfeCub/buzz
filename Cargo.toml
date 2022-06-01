@@ -2,6 +2,7 @@
 
 members = [
     "buzz",
-    "buzz-macro",
+    "buzz-codegen",
+    "buzz-types",
     "examples",
 ]

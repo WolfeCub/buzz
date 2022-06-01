@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use crate::types::{HttpResponse, HttpStatusCode};
+use crate::{HttpResponse, HttpStatusCode};
 
 pub trait Respond {
     fn respond(self) -> HttpResponse;

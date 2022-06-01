@@ -11,7 +11,7 @@ fn debug() {
 
 proptest! {
     #[test]
-    fn parses_valid_http_methods(test_method: HttpMethod) {
+    fn parses_valid_http_methods(test_method in "GET|PUT|POST|DELETE|PATCH|OPTIONS") {
         let format = format!("{} / HTTP/1.1", test_method.to_string());
 
         let mut parser = Parser::new(format.as_bytes());
@@ -19,7 +19,7 @@ proptest! {
 
         assert!(result.is_ok());
 
-        assert_eq!(result.unwrap(), test_method);
+        assert_eq!(result.unwrap().to_string(), test_method);
         assert_eq!(parser.offset - 1, test_method.to_string().len());
     }
 

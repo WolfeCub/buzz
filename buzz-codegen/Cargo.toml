@@ -1,5 +1,5 @@
 [package]
-name = "buzz_macro"
+name = "buzz-codegen"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-buzz = { path = "../buzz" }
+buzz-types = { path = "../buzz-types" }
 syn = { version = "1.0", features = ["full"] }
 quote = "1.0"
 

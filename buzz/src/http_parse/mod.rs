@@ -4,7 +4,7 @@ use thiserror::Error;
 mod parser;
 use parser::*;
 
-use crate::types::*;
+use buzz_types::*;
 
 #[cfg(test)]
 mod tests;

@@ -4,10 +4,8 @@ use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
 
-use route_metadata::RouteMetadata;
-
 use crate::http_parse::*;
-use crate::types::*;
+use buzz_types::*;
 
 /* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {

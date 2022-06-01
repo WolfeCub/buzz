@@ -1,8 +1,7 @@
 [package]
-name = "buzz_bin"
+name = "buzz-examples"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 buzz = { path = "../buzz" }
-buzz_macro = { path = "../buzz-macro" }
