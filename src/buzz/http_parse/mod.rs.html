@@ -187,83 +187,23 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
-<span class="kw">use</span> <span class="ident">thiserror::Error</span>;
-
-<span class="kw">mod</span> <span class="ident">parser</span>;
-<span class="kw">use</span> <span class="ident">parser</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">buzz_types</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">buzz_types::errors::HttpParseError</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">HttpParseError</span> {
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;HttpParseError Method: `{0}`&quot;</span>)]</span>
-    <span class="ident">Method</span>(<span class="ident">String</span>),
-
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;HttpParseError Path: `{0}`&quot;</span>)]</span>
-    <span class="ident">Path</span>(<span class="ident">String</span>),
-
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;HttpParseError Version: `{0}`&quot;</span>)]</span>
-    <span class="ident">VersionText</span>(<span class="ident">String</span>),
-
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;HttpParseError Version: `{0}`&quot;</span>)]</span>
-    <span class="ident">VersionParse</span>(<span class="attribute">#[<span class="ident">from</span>]</span> <span class="ident">std::num::ParseFloatError</span>),
-
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;HttpParseError Header: `{0}`&quot;</span>)]</span>
-    <span class="ident">Header</span>(<span class="ident">String</span>),
-}
-
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">HttpRequest</span> {
-    <span class="kw">pub</span> <span class="ident">method</span>: <span class="ident">HttpMethod</span>,
-    <span class="kw">pub</span> <span class="ident">path</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span> <span class="ident">version</span>: <span class="ident">f64</span>,
-    <span class="kw">pub</span> <span class="ident">headers</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
-}
-
-
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_http</span>(<span class="ident">request</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpRequest</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parser</span> <span class="op">=</span> <span class="ident">Parser::new</span>(<span class="ident">request</span>);
+    <span class="kw">let</span> <span class="ident">parser</span> <span class="op">=</span> <span class="ident">Parser::new</span>(<span class="ident">request</span>);
 
-    <span class="kw">let</span> <span class="ident">method</span> <span class="op">=</span> <span class="ident">parse_http_method</span>(<span class="kw-2">&amp;mut</span> <span class="ident">parser</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">parse_http_path</span>(<span class="kw-2">&amp;mut</span> <span class="ident">parser</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">parse_http_version</span>(<span class="kw-2">&amp;mut</span> <span class="ident">parser</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">method</span> <span class="op">=</span> <span class="ident">parse_http_method</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">parse_http_path</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">parse_http_version</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">val</span>)) <span class="op">=</span> <span class="ident">parse_http_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">parser</span>)<span class="question-mark">?</span> {
+    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">val</span>)) <span class="op">=</span> <span class="ident">parse_http_header</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span> {
         <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">to_owned</span>(), <span class="ident">val</span>.<span class="ident">to_owned</span>());
     }
 
@@ -275,8 +215,8 @@
     })
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_method</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpMethod</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>;
+<span class="kw">fn</span> <span class="ident">parse_http_method</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpMethod</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
 
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take_if</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span>) {
         <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_whitespace</span>() {
@@ -289,13 +229,13 @@
         }
     }
 
-    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span> {
+    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Method</span>(
             <span class="string">&quot;Request started with whitespace which may mean no method was specified&quot;</span>.<span class="ident">to_owned</span>(),
         ));
     }
 
-    <span class="kw">let</span> <span class="ident">potential_method</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="ident">potential_method</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>);
     <span class="kw">let</span> <span class="ident">method</span> <span class="op">=</span> <span class="ident">potential_method</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">HttpMethod</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
         <span class="ident">HttpParseError::Method</span>(<span class="macro">format!</span>(
             <span class="string">&quot;Provided method {:#?} is not a valid http method&quot;</span>,
@@ -306,8 +246,8 @@
     <span class="prelude-val">Ok</span>(<span class="ident">method</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_path</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>;
+<span class="kw">fn</span> <span class="ident">parse_http_path</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
 
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
         <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_whitespace</span>() {
@@ -315,17 +255,17 @@
         }
     }
 
-    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span> {
+    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Path</span>(
             <span class="string">&quot;Empty path found requires at least /&quot;</span>.<span class="ident">to_owned</span>(),
         ));
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">to_owned</span>())
+    <span class="prelude-val">Ok</span>(<span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>).<span class="ident">to_owned</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_version</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>;
+<span class="kw">fn</span> <span class="ident">parse_http_version</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
 
     <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">5</span> {
         <span class="kw">match</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
@@ -344,7 +284,7 @@
         ));
     }
 
-    <span class="kw">let</span> <span class="ident">start_of_version</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>;
+    <span class="kw">let</span> <span class="ident">start_of_version</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
 
     <span class="ident">parser</span>.<span class="ident">consume_while</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span>);
 
@@ -354,20 +294,20 @@
         ));
     }
 
-    <span class="kw">if</span> <span class="ident">start_of_version</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span> {
+    <span class="kw">if</span> <span class="ident">start_of_version</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Path</span>(<span class="string">&quot;Empty version found&quot;</span>.<span class="ident">to_owned</span>()));
     }
 
     <span class="prelude-val">Ok</span>(<span class="ident">parser</span>
-        .<span class="ident">substr</span>(<span class="ident">start_of_version</span>, <span class="ident">parser</span>.<span class="ident">offset</span> <span class="op">-</span> <span class="number">2</span>)
+        .<span class="ident">substr</span>(<span class="ident">start_of_version</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">2</span>)
         .<span class="ident">parse</span>()
         .<span class="ident">map_err</span>(<span class="ident">HttpParseError::VersionParse</span>)<span class="question-mark">?</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">parse_http_header</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">parser</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>;
+    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">found_colon</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
@@ -387,7 +327,7 @@
         }
     }
 
-    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span> {
+    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Header</span>(<span class="string">&quot;Header may not be empty&quot;</span>.<span class="ident">to_owned</span>()));
     }
 
@@ -403,8 +343,8 @@
         ));
     }
 
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">to_owned</span>();
-    <span class="kw">let</span> <span class="ident">value_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>;
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>).<span class="ident">to_owned</span>();
+    <span class="kw">let</span> <span class="ident">value_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
 
     <span class="ident">parser</span>.<span class="ident">consume_while</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span>);
 
@@ -418,13 +358,13 @@
     <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((
         <span class="ident">key</span>,
         <span class="ident">parser</span>
-            .<span class="ident">substr</span>(<span class="ident">value_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span> <span class="op">-</span> <span class="number">1</span>)
+            .<span class="ident">substr</span>(<span class="ident">value_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>)
             .<span class="ident">trim</span>()
             .<span class="ident">to_owned</span>(),
     )))
 }
 
-<span class="kw">fn</span> <span class="ident">eat_newline</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">eat_newline</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
     <span class="kw">let</span> <span class="ident">network_newline</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take_n</span>(<span class="number">2</span>);
 
     <span class="kw">return</span> <span class="ident">network_newline</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">network_newline</span>.<span class="ident">unwrap</span>() <span class="op">==</span> <span class="string">b&quot;\r\n&quot;</span>;

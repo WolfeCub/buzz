@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["HttpMethod",""],["HttpStatusCode",""]],"fn":[["to_status_num",""]],"mod":[["traits",""]],"struct":[["HttpResponse",""],["RouteMetadata",""]]});
+initSidebarItems({"enum":[["HttpMethod",""],["HttpStatusCode",""],["SegmentType",""]],"fn":[["to_status_num",""]],"mod":[["errors",""],["traits",""]],"struct":[["HttpRequest",""],["HttpResponse",""],["Parser",""],["Route",""]]});
