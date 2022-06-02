@@ -9,15 +9,6 @@ use buzz_types::errors::HttpParseError;
 #[cfg(test)]
 mod tests;
 
-#[derive(Debug)]
-pub struct HttpRequest {
-    pub method: HttpMethod,
-    pub path: String,
-    pub version: f64,
-    pub headers: HashMap<String, String>,
-}
-
-
 pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
     let parser = Parser::new(request);
 

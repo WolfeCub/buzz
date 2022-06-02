@@ -25,6 +25,11 @@ fn other() -> impl Respond {
     Result::<(), _>::Err(std::fmt::Error::default())
 }
 
+#[get("/params/{hello}")]
+fn params(hello: String) -> impl Respond {
+    hello
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .route(route!(foo))

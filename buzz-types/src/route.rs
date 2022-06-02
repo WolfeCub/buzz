@@ -1,4 +1,10 @@
+#[derive(PartialEq, Eq)]
+pub enum SegmentType {
+    Const(&'static str),
+    Variable(&'static str),
+}
+
 pub struct Route {
     pub path: &'static str,
-    pub variables: Vec<String>,
+    pub segments: &'static [SegmentType],
 }

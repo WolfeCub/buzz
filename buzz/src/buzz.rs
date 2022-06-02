@@ -10,7 +10,7 @@ use buzz_types::*;
 /* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {
     addr: &'static str,
-    handlers: Vec<(&'static RouteMetadata<'static>, fn() -> HttpResponse)>,
+    handlers: Vec<(&'static RouteMetadata<'static>, fn(HttpRequest) -> HttpResponse)>,
 }
 
 impl Buzz {
@@ -21,7 +21,7 @@ impl Buzz {
         }
     }
 
-    pub fn route(mut self, route: (fn() -> HttpResponse, &'static RouteMetadata<'static>)) -> Self {
+    pub fn route(mut self, route: (fn(HttpRequest) -> HttpResponse, &'static RouteMetadata<'static>)) -> Self {
         self.handlers.push((route.1, route.0));
         self
     }
@@ -51,7 +51,7 @@ impl Buzz {
         });
 
         let response = match lookup {
-            Some(pair) => pair.1(),
+            Some(pair) => pair.1(request),
             None => HttpResponse::new(HttpStatusCode::NotFound),
         };
 

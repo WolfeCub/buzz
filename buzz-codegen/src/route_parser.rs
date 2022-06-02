@@ -1,15 +1,15 @@
-use buzz_types::Parser;
 use buzz_types::errors::RouteParseError;
-use quote::{quote, ToTokens};
+use buzz_types::Parser;
+use quote::{quote, ToTokens}; 
 
 pub fn parse_route(attribute_path: String) -> Result<Route, RouteParseError> {
-    let mut parser = Parser::new(attribute_path.as_bytes());
+    let parser = Parser::new(attribute_path.as_bytes());
 
     /* TODO: Maybe this doesn't actually make sense but for now it exists */
     if Some(b'/') != parser.peek() {
         return Err(RouteParseError::MissingLeadingSlash);
     }
-    
+
     /* TODO: Maybe counting the '/'s and allocating the right amount is faster? */
     let mut thing = Vec::new();
 
@@ -22,37 +22,57 @@ pub fn parse_route(attribute_path: String) -> Result<Route, RouteParseError> {
 
         if cand[0] == b'{' && cand[cand.len() - 1] == b'}' {
             let var_name = parser.substr(start + 1, parser.offset() - 1);
-            thing.push(var_name.to_owned());
+            thing.push(SegmentType::Variable(var_name.to_owned()));
+        } else {
+            let var_name = parser.substr_to_offset(start);
+            thing.push(SegmentType::Const(var_name.to_owned()));
         }
     }
 
     Ok(Route {
         path: attribute_path,
-        variables: thing,
+        segments: thing,
     })
+}
+
+pub enum SegmentType {
+    Const(String),
+    Variable(String),
+}
+
+impl ToTokens for SegmentType {
+    fn to_tokens(&self, tokens: &mut quote::__private::TokenStream) {
+        match self {
+            SegmentType::Const(seg) => tokens.extend(quote! {
+                ::buzz::types::SegmentType::Const(#seg)
+            }),
+            SegmentType::Variable(name) => tokens.extend(quote! {
+                ::buzz::types::SegmentType::Variable(#name)
+            }),
+        }
+    }
 }
 
 pub struct Route {
     pub path: String,
-    pub variables: Vec<String>,
+    pub segments: Vec<SegmentType>,
 }
 
 impl ToTokens for Route {
     fn to_tokens(&self, tokens: &mut quote::__private::TokenStream) {
         let path = &self.path;
-        let variables = &self.variables;
+        let segments = &self.segments;
 
         let expanded = quote! {
             ::buzz::types::Route {
                 path: #path,
-                variables: vec![#(#variables,)*],
+                segments: &[#(#segments,)*]
             }
         };
 
         tokens.extend(expanded);
     }
 }
-
 
 #[cfg(test)]
 mod test {
