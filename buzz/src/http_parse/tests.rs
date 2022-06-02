@@ -20,7 +20,7 @@ proptest! {
         assert!(result.is_ok());
 
         assert_eq!(result.unwrap().to_string(), test_method);
-        assert_eq!(parser.offset.get() - 1, test_method.to_string().len());
+        assert_eq!(parser.offset() - 1, test_method.to_string().len());
     }
 
     #[test]
@@ -42,7 +42,7 @@ proptest! {
         assert!(result.is_ok());
 
         assert_eq!(result.unwrap(), test_path);
-        assert_eq!(parser.offset.get() - 1, test_path.len());
+        assert_eq!(parser.offset() - 1, test_path.len());
     }
 
     #[test]
@@ -55,7 +55,7 @@ proptest! {
         assert!(result.is_ok());
 
         assert_ne!(result.unwrap(), test_path);
-        assert_ne!(parser.offset.get() - 1, test_path.len());
+        assert_ne!(parser.offset() - 1, test_path.len());
     }
 
     #[test]
@@ -69,7 +69,7 @@ proptest! {
 
         let version = result.unwrap();
         assert_eq!(version, test_version.parse().unwrap());
-        assert_eq!(parser.offset.get(), parser.data.len());
+        assert_eq!(parser.offset(), parser.data.len());
     }
 
     #[test]

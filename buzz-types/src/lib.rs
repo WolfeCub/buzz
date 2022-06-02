@@ -10,9 +10,6 @@ pub use http_response::*;
 mod parser;
 pub use parser::*;
 
-mod route_metadata;
-pub use route_metadata::*;
-
 mod route;
 pub use route::*;
 

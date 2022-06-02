@@ -11,24 +11,41 @@ pub struct HttpRequest {
 }
 
 impl HttpRequest {
-    pub fn match_route_param(&self, seg_types: Vec<SegmentType>, name: &str) -> Option<String> {
-        let segments: Vec<_> = self.path.split("/").collect();
+    /* TODO: Not sure how fast this function is. Both algorithmicly and implementation wise. */
+    pub fn match_route_params(&self, seg_types: &[SegmentType], method: HttpMethod) -> Option<HashMap<&str, &str>> {
+        if method != self.method {
+            return None;
+        }
+
+        let segments: Vec<_> = self.path.split("/").filter(|p| !p.is_empty()).collect();
 
         if segments.len() != seg_types.len() {
             return None;
         }
 
-        segments.iter().zip(seg_types).find_map(|(seg, ty)| {
-            match ty {
-                SegmentType::Variable(var_name) => {
-                    if *var_name == *name {
-                        Some((*seg).to_owned())
-                    } else {
+        let mut map = HashMap::new();
+
+        /* TODO: This is pretty gnarly. Make it nicer. iter() without a reference? */
+        for (seg, ty) in segments.iter().zip(seg_types) {
+            let failed = match ty {
+                SegmentType::Const(const_value) => {
+                    if **const_value != **seg {
                         None
+                    } else {
+                        Some(())
                     }
                 },
-                _ => None
+                SegmentType::Variable(var_name) => {
+                    map.insert(*var_name, *seg);
+                    Some(())
+                },
+            };
+
+            if failed.is_none() {
+                return None;
             }
-        })
+        };
+
+        Some(map)
     }
 }

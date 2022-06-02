@@ -1,8 +1,5 @@
 use std::collections::HashMap;
 
-mod parser;
-use parser::*;
-
 use buzz_types::*;
 use buzz_types::errors::HttpParseError;
 

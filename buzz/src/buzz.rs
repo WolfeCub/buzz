@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::io::prelude::*;
 use std::net::TcpListener;
@@ -10,7 +9,7 @@ use buzz_types::*;
 /* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {
     addr: &'static str,
-    handlers: Vec<(&'static RouteMetadata<'static>, fn(HttpRequest) -> HttpResponse)>,
+    handlers: Vec<fn(&HttpRequest) -> Option<HttpResponse>>,
 }
 
 impl Buzz {
@@ -21,8 +20,8 @@ impl Buzz {
         }
     }
 
-    pub fn route(mut self, route: (fn(HttpRequest) -> HttpResponse, &'static RouteMetadata<'static>)) -> Self {
-        self.handlers.push((route.1, route.0));
+    pub fn route(mut self, handler: fn(&HttpRequest) -> Option<HttpResponse>) -> Self {
+        self.handlers.push(handler);
         self
     }
 
@@ -46,14 +45,17 @@ impl Buzz {
 
         let request = parse_http(&buffer)?;
 
-        let lookup = self.handlers.iter().find(|&item| {
-            item.0.route.path == request.path && item.0.method == request.method.to_string()
-        });
+        for handler in self.handlers.iter() {
+            if let Some(response) = (*handler)(&request) {
+                write_response(&mut stream, &response)?;
 
-        let response = match lookup {
-            Some(pair) => pair.1(request),
-            None => HttpResponse::new(HttpStatusCode::NotFound),
-        };
+                stream.flush()?;
+                stream.shutdown(std::net::Shutdown::Both)?;
+                return Ok(());
+            }
+        }
+
+        let response = HttpResponse::new(HttpStatusCode::NotFound);
 
         write_response(&mut stream, &response)?;
 

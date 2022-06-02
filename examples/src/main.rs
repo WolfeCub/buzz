@@ -37,5 +37,6 @@ fn main() {
         .route(route!(it))
         .route(route!(empty))
         .route(route!(other))
+        .route(route!(params))
         .run_server();
 }

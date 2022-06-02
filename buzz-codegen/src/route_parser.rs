@@ -73,13 +73,3 @@ impl ToTokens for Route {
         tokens.extend(expanded);
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn thing() {
-        parse_route("/blah/{thing}");
-    }
-}

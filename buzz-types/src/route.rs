@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum SegmentType {
     Const(&'static str),
     Variable(&'static str),
