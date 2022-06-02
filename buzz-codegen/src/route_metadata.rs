@@ -1,6 +1,6 @@
-use crate::Route;
+use crate::route_parser::Route;
 
 pub struct RouteMetadata<'a> {
     pub method: &'a str,
-    pub route: Route,
+    pub route: &'a Route,
 }

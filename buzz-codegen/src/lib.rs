@@ -1,8 +1,12 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, AttributeArgs, ItemFn, NestedMeta, Ident};
+use route_parser::parse_route;
+use syn::{parse_macro_input, AttributeArgs, Ident, ItemFn, NestedMeta};
 
-macro_rules! create_registry_macro {
+mod route_metadata;
+mod route_parser;
+
+macro_rules! generate_wrapper_macro {
     ($name:ident, $enum_method:literal) => {
         #[proc_macro_attribute]
         pub fn $name(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -14,12 +18,12 @@ macro_rules! create_registry_macro {
     };
 }
 
-create_registry_macro!(get, "GET");
-create_registry_macro!(put, "PUT");
-create_registry_macro!(post, "POST");
-create_registry_macro!(delete, "DELETE");
-create_registry_macro!(patch, "PATCH");
-create_registry_macro!(options, "OPTIONS");
+generate_wrapper_macro!(get, "GET");
+generate_wrapper_macro!(put, "PUT");
+generate_wrapper_macro!(post, "POST");
+generate_wrapper_macro!(delete, "DELETE");
+generate_wrapper_macro!(patch, "PATCH");
+generate_wrapper_macro!(options, "OPTIONS");
 
 fn make_wrapper_name(name: &Ident) -> Ident {
     format_ident!("buzz_wrapper_{}", name)
@@ -36,17 +40,22 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
     let wrapper_name = make_wrapper_name(name);
     let metadata_name = make_metadata_name(name);
 
+    let route = match path {
+        NestedMeta::Lit(syn::Lit::Str(lit)) => parse_route(lit.value()).expect("Invalid route"),
+        _ => panic!("Argument must be a string literal"),
+    };
+
     let expanded = quote! {
         #input
 
-        fn #wrapper_name() -> buzz::types::HttpResponse {
+        fn #wrapper_name() -> ::buzz::types::HttpResponse {
             #name().respond()
         }
 
         #[allow(non_upper_case_globals)]
-        static #metadata_name: buzz::types::RouteMetadata = buzz::types::RouteMetadata {
+        static #metadata_name: ::buzz::types::RouteMetadata = ::buzz::types::RouteMetadata {
             method: #method,
-            path: #path,
+            route: #route,
         };
     };
 
@@ -61,7 +70,7 @@ pub fn route(input: TokenStream) -> TokenStream {
     let metadata_name = make_metadata_name(&id);
 
     let expanded = quote! {
-        (#wrapper_name, #metadata_name)
+        (#wrapper_name, &#metadata_name)
     };
 
     TokenStream::from(expanded)

@@ -36,7 +36,6 @@ dependencies = [
  "buzz-codegen",
  "buzz-types",
  "proptest",
- "thiserror",
 ]
 
 [[package]]
@@ -58,6 +57,10 @@ dependencies = [
 [[package]]
 name = "buzz-types"
 version = "0.1.0"
+dependencies = [
+ "quote",
+ "thiserror",
+]
 
 [[package]]
 name = "byteorder"

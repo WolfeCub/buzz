@@ -1,31 +1,13 @@
 use std::collections::HashMap;
-use thiserror::Error;
 
 mod parser;
 use parser::*;
 
 use buzz_types::*;
+use buzz_types::errors::HttpParseError;
 
 #[cfg(test)]
 mod tests;
-
-#[derive(Error, Debug)]
-pub enum HttpParseError {
-    #[error("HttpParseError Method: `{0}`")]
-    Method(String),
-
-    #[error("HttpParseError Path: `{0}`")]
-    Path(String),
-
-    #[error("HttpParseError Version: `{0}`")]
-    VersionText(String),
-
-    #[error("HttpParseError Version: `{0}`")]
-    VersionParse(#[from] std::num::ParseFloatError),
-
-    #[error("HttpParseError Header: `{0}`")]
-    Header(String),
-}
 
 #[derive(Debug)]
 pub struct HttpRequest {
@@ -37,14 +19,14 @@ pub struct HttpRequest {
 
 
 pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
-    let mut parser = Parser::new(request);
+    let parser = Parser::new(request);
 
-    let method = parse_http_method(&mut parser)?;
-    let path = parse_http_path(&mut parser)?;
-    let version = parse_http_version(&mut parser)?;
+    let method = parse_http_method(&parser)?;
+    let path = parse_http_path(&parser)?;
+    let version = parse_http_version(&parser)?;
 
     let mut headers: HashMap<String, String> = HashMap::new();
-    while let Some((key, val)) = parse_http_header(&mut parser)? {
+    while let Some((key, val)) = parse_http_header(&parser)? {
         headers.insert(key.to_owned(), val.to_owned());
     }
 
@@ -56,8 +38,8 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
     })
 }
 
-fn parse_http_method<'a>(parser: &mut Parser<'a>) -> Result<HttpMethod, HttpParseError> {
-    let starting_pos = parser.offset;
+fn parse_http_method<'a>(parser: &Parser<'a>) -> Result<HttpMethod, HttpParseError> {
+    let starting_pos = parser.offset();
 
     while let Some(c) = parser.take_if(|c| c != b'\r') {
         if c.is_ascii_whitespace() {
@@ -70,13 +52,13 @@ fn parse_http_method<'a>(parser: &mut Parser<'a>) -> Result<HttpMethod, HttpPars
         }
     }
 
-    if starting_pos == parser.offset {
+    if starting_pos == parser.offset() {
         return Err(HttpParseError::Method(
             "Request started with whitespace which may mean no method was specified".to_owned(),
         ));
     }
 
-    let potential_method = parser.substr(starting_pos, parser.offset - 1);
+    let potential_method = parser.substr(starting_pos, parser.offset() - 1);
     let method = potential_method.parse::<HttpMethod>().map_err(|_| {
         HttpParseError::Method(format!(
             "Provided method {:#?} is not a valid http method",
@@ -87,8 +69,8 @@ fn parse_http_method<'a>(parser: &mut Parser<'a>) -> Result<HttpMethod, HttpPars
     Ok(method)
 }
 
-fn parse_http_path<'a>(parser: &mut Parser<'a>) -> Result<String, HttpParseError> {
-    let starting_pos = parser.offset;
+fn parse_http_path<'a>(parser: &Parser<'a>) -> Result<String, HttpParseError> {
+    let starting_pos = parser.offset();
 
     while let Some(c) = parser.take() {
         if c.is_ascii_whitespace() {
@@ -96,17 +78,17 @@ fn parse_http_path<'a>(parser: &mut Parser<'a>) -> Result<String, HttpParseError
         }
     }
 
-    if starting_pos == parser.offset {
+    if starting_pos == parser.offset() {
         return Err(HttpParseError::Path(
             "Empty path found requires at least /".to_owned(),
         ));
     }
 
-    Ok(parser.substr(starting_pos, parser.offset - 1).to_owned())
+    Ok(parser.substr(starting_pos, parser.offset() - 1).to_owned())
 }
 
-fn parse_http_version<'a>(parser: &mut Parser<'a>) -> Result<f64, HttpParseError> {
-    let starting_pos = parser.offset;
+fn parse_http_version<'a>(parser: &Parser<'a>) -> Result<f64, HttpParseError> {
+    let starting_pos = parser.offset();
 
     for _ in 0..5 {
         match parser.take() {
@@ -125,7 +107,7 @@ fn parse_http_version<'a>(parser: &mut Parser<'a>) -> Result<f64, HttpParseError
         ));
     }
 
-    let start_of_version = parser.offset;
+    let start_of_version = parser.offset();
 
     parser.consume_while(|c| c != b'\r');
 
@@ -135,20 +117,20 @@ fn parse_http_version<'a>(parser: &mut Parser<'a>) -> Result<f64, HttpParseError
         ));
     }
 
-    if start_of_version == parser.offset {
+    if start_of_version == parser.offset() {
         return Err(HttpParseError::Path("Empty version found".to_owned()));
     }
 
     Ok(parser
-        .substr(start_of_version, parser.offset - 2)
+        .substr(start_of_version, parser.offset() - 2)
         .parse()
         .map_err(HttpParseError::VersionParse)?)
 }
 
 fn parse_http_header<'a>(
-    parser: &mut Parser<'a>,
+    parser: &Parser<'a>,
 ) -> Result<Option<(String, String)>, HttpParseError> {
-    let starting_pos = parser.offset;
+    let starting_pos = parser.offset();
     let mut found_colon = false;
 
     while let Some(c) = parser.take() {
@@ -168,7 +150,7 @@ fn parse_http_header<'a>(
         }
     }
 
-    if starting_pos == parser.offset {
+    if starting_pos == parser.offset() {
         return Err(HttpParseError::Header("Header may not be empty".to_owned()));
     }
 
@@ -184,8 +166,8 @@ fn parse_http_header<'a>(
         ));
     }
 
-    let key = parser.substr(starting_pos, parser.offset - 1).to_owned();
-    let value_pos = parser.offset;
+    let key = parser.substr(starting_pos, parser.offset() - 1).to_owned();
+    let value_pos = parser.offset();
 
     parser.consume_while(|c| c != b'\r');
 
@@ -199,13 +181,13 @@ fn parse_http_header<'a>(
     Ok(Some((
         key,
         parser
-            .substr(value_pos, parser.offset - 1)
+            .substr(value_pos, parser.offset() - 1)
             .trim()
             .to_owned(),
     )))
 }
 
-fn eat_newline<'a>(parser: &mut Parser<'a>) -> bool {
+fn eat_newline<'a>(parser: &Parser<'a>) -> bool {
     let network_newline = parser.take_n(2);
 
     return network_newline.is_some() && network_newline.unwrap() == b"\r\n";

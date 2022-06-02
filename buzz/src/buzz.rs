@@ -10,19 +10,19 @@ use buzz_types::*;
 /* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {
     addr: &'static str,
-    handlers: HashMap<RouteMetadata<'static>, fn() -> HttpResponse>,
+    handlers: Vec<(&'static RouteMetadata<'static>, fn() -> HttpResponse)>,
 }
 
 impl Buzz {
     pub fn new(addr: &'static str) -> Self {
         Self {
             addr,
-            handlers: HashMap::new(),
+            handlers: Vec::new(),
         }
     }
 
-    pub fn route(mut self, route: (fn() -> HttpResponse, RouteMetadata<'static>)) -> Self {
-        self.handlers.insert(route.1, route.0);
+    pub fn route(mut self, route: (fn() -> HttpResponse, &'static RouteMetadata<'static>)) -> Self {
+        self.handlers.push((route.1, route.0));
         self
     }
 
@@ -46,12 +46,12 @@ impl Buzz {
 
         let request = parse_http(&buffer)?;
 
-        let metadata = RouteMetadata {
-            method: &request.method.to_string(),
-            path: &request.path,
-        };
-        let response = match self.handlers.get(&metadata) {
-            Some(handler) => handler(),
+        let lookup = self.handlers.iter().find(|&item| {
+            item.0.route.path == request.path && item.0.method == request.method.to_string()
+        });
+
+        let response = match lookup {
+            Some(pair) => pair.1(),
             None => HttpResponse::new(HttpStatusCode::NotFound),
         };
 
