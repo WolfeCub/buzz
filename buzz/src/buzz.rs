@@ -68,17 +68,17 @@ impl Buzz {
 
 fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Result<()> {
     /* TODO: Not hardcoded version. What do we actually support? */
-    stream.write(
-        format!(
-            "HTTP/1.1 {} {}\r\n",
-            to_status_num(request.status_code),
-            request.status_code.to_string()
-        )
-        .as_bytes(),
-    )?;
+    stream.write(b"HTTP/1.1 ")?;
+    stream.write((request.status_code as u32).to_string().as_bytes())?;
+    stream.write(b" ")?;
+    stream.write(request.status_code.to_string().as_bytes())?;
+    stream.write(b"\r\n")?;
 
     for (key, value) in &request.headers {
-        stream.write(format!("{}: {}\r\n", key, value).as_bytes())?;
+        stream.write(key.as_bytes())?;
+        stream.write(b": ")?;
+        stream.write(value.as_bytes())?;
+        stream.write(b"\r\n")?;
     }
 
     stream.write(b"\r\n")?;

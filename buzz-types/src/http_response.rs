@@ -1,15 +1,13 @@
-use std::collections::HashMap;
-
 #[derive(Debug)]
 pub struct HttpResponse {
     pub status_code: HttpStatusCode,
-    pub headers: HashMap<String, String>,
+    pub headers: Vec<(String, String)>,
     pub body: Option<String>,
 }
 
 impl HttpResponse {
     pub fn new(code: HttpStatusCode) -> Self {
-        let headers = HashMap::from([
+        let headers = Vec::from([
             ("Server".to_owned(), "buzz".to_owned()),
             ("Content-Length".to_owned(), "0".to_owned()),
         ]);
@@ -27,7 +25,7 @@ impl HttpResponse {
     }
 
     pub fn body(mut self, body: String) -> Self {
-        self.headers.insert("Content-Length".to_owned(), body.len().to_string());
+        self.headers.push(("Content-Length".to_owned(), body.len().to_string()));
         self.body = Some(body);
         self
     }
@@ -35,11 +33,12 @@ impl HttpResponse {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[repr(u32)]
 pub enum HttpStatusCode {
-    Ok,
-    NoContent,
-    NotFound,
-    InternalServerError,
+    Ok = 200,
+    NoContent = 204,
+    NotFound = 404,
+    InternalServerError = 500,
 }
 
 impl ToString for HttpStatusCode {
@@ -51,14 +50,5 @@ impl ToString for HttpStatusCode {
             Self::InternalServerError => "Internal Server Error",
         }
         .to_owned()
-    }
-}
-
-pub fn to_status_num(e: HttpStatusCode) -> u32 {
-    match e {
-        HttpStatusCode::Ok => 200,
-        HttpStatusCode::NoContent => 204,
-        HttpStatusCode::NotFound => 404,
-        HttpStatusCode::InternalServerError => 500,
     }
 }
