@@ -6,22 +6,63 @@ use std::net::TcpStream;
 use crate::http_parse::*;
 use buzz_types::*;
 
-/* TODO: Use enum in the handler map rather than strings */
 pub struct Buzz {
     addr: &'static str,
-    handlers: Vec<fn(&HttpRequest) -> Option<HttpResponse>>,
+    routes: Vec<Route>,
 }
 
 impl Buzz {
     pub fn new(addr: &'static str) -> Self {
         Self {
             addr,
-            handlers: Vec::new(),
+            routes: Vec::new(),
         }
     }
 
-    pub fn route(mut self, handler: fn(&HttpRequest) -> Option<HttpResponse>) -> Self {
-        self.handlers.push(handler);
+    pub fn route(
+        mut self,
+        tuple: (fn(&HttpRequest, Vec<&str>) -> HttpResponse, RouteMetadata),
+    ) -> Self {
+        fn recurse(
+            segments: &[SegmentType],
+            routes: &mut Vec<Route>,
+            method: &HttpMethod,
+            handler: fn(&HttpRequest, Vec<&str>) -> HttpResponse,
+        ) {
+            if segments.len() == 0 {
+                return;
+            }
+
+            /* TODO: Lots 'o repetition. Refactor this */
+            match segments[0] {
+                SegmentType::Const(text) => {
+                    if let Some(route) = routes.iter_mut().find(|r| match r.segment {
+                        SegmentType::Const(route_text) => *text == *route_text,
+                        _ => false,
+                    }) {
+                        recurse(&segments[1..], &mut route.children, method, handler);
+                    } else {
+                        routes.push(vec_to_route(segments, method, handler));
+                    }
+                }
+                SegmentType::Variable(var_name) => {
+                    if let Some(route) = routes.iter_mut().find(|r| match r.segment {
+                        SegmentType::Variable(route_var_name) => *var_name == *route_var_name,
+                        _ => false,
+                    }) {
+                        recurse(&segments[1..], &mut route.children, method, handler);
+                    } else {
+                        routes.push(vec_to_route(segments, method, handler));
+                    }
+                }
+                SegmentType::SegNone => {
+                    routes.push(vec_to_route(segments, method, handler));
+                }
+            }
+        }
+
+        recurse(tuple.1.route, &mut self.routes, &tuple.1.method, tuple.0);
+
         self
     }
 
@@ -45,22 +86,12 @@ impl Buzz {
 
         let request = parse_http(&buffer)?;
 
-        for handler in self.handlers.iter() {
-            if let Some(response) = (*handler)(&request) {
-                write_response(&mut stream, &response)?;
-
-                stream.flush()?;
-                stream.shutdown(std::net::Shutdown::Both)?;
-                return Ok(());
-            }
+        if let Some(response) = match_route_params(request, &self.routes) {
+            write_response(&mut stream, &response)?;
+            return Ok(());
         }
 
-        let response = HttpResponse::new(HttpStatusCode::NotFound);
-
-        write_response(&mut stream, &response)?;
-
-        stream.flush()?;
-        stream.shutdown(std::net::Shutdown::Both)?;
+        write_response(&mut stream, &HttpResponse::new(HttpStatusCode::NotFound))?;
 
         Ok(())
     }
@@ -89,5 +120,143 @@ fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Re
     }
     stream.flush()?;
 
+    stream.shutdown(std::net::Shutdown::Both)?;
     Ok(())
+}
+
+fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<HttpResponse> {
+    let segments: Vec<_> = request.path.split("/").filter(|p| !p.is_empty()).collect();
+
+    let candidates = route_tree_filter(&segments, &routes);
+    let (handler, route) = find_most_specific(&candidates);
+    let flat = unsafe_flatten(&route);
+
+    let vars = flat
+        .iter()
+        .zip(segments)
+        .filter_map(|(ty, val)| {
+            if let SegmentType::Variable(_) = ty {
+                Some(val)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Some(handler(&request, vars))
+}
+
+struct FilterRoute {
+    pub segment: SegmentType,
+    pub children: Vec<Route>,
+    pub handler: Option<fn(&HttpRequest, Vec<&str>) -> HttpResponse>,
+    pub method: Option<HttpMethod>,
+}
+
+fn route_tree_filter<'a>(segments: &[&str], routes: &[Route]) -> Vec<Route> {
+    if segments.len() <= 0 {
+        return Vec::new();
+    }
+
+    let routes: Vec<_> = routes
+        .iter()
+        .filter(|r| match r.segment {
+            SegmentType::Const(text) => *text == *segments[0],
+            SegmentType::Variable(_) => true,
+            SegmentType::SegNone => false,
+        })
+        .collect();
+
+    routes
+        .iter()
+        .map(|r| Route {
+            segment: r.segment,
+            children: route_tree_filter(&segments[1..], &r.children),
+            handler: r.handler,
+            method: r.method,
+        })
+        .collect()
+}
+
+fn find_most_specific(routes: &[Route]) -> (fn(&HttpRequest, Vec<&str>) -> HttpResponse, Route) {
+    fn helper(
+        routes: &[Route],
+        depth: usize,
+    ) -> (usize, fn(&HttpRequest, Vec<&str>) -> HttpResponse, Route) {
+        routes
+            .iter()
+            .map(|r| {
+                if r.children.len() > 0 {
+                    let (depth, handler, route) = helper(&r.children, depth + 1);
+                    (
+                        depth,
+                        handler,
+                        Route {
+                            segment: r.segment,
+                            children: vec![route],
+                            handler: r.handler,
+                            method: r.method,
+                        },
+                    )
+                } else {
+                    (
+                        depth,
+                        r.handler
+                            .expect("Somehow we're at a leaf that has no handler"),
+                        r.clone(),
+                    )
+                }
+            })
+            .max_by_key(|r| r.0)
+            .unwrap()
+    }
+
+    let (depth, handler, route) = helper(routes, 0);
+    (handler, route)
+}
+
+fn unsafe_flatten(route: &Route) -> Vec<SegmentType> {
+    let mut cursor = route;
+
+    let mut acc = Vec::new();
+
+    loop {
+        match cursor.segment {
+            SegmentType::SegNone => break,
+            otherwise => acc.push(otherwise),
+        }
+
+        if cursor.children.len() > 0 {
+            cursor = &cursor.children[0];
+        } else {
+            break;
+        }
+    }
+
+    acc
+}
+
+pub fn vec_to_route(
+    flat: &[SegmentType],
+    method: &HttpMethod,
+    handler: fn(&HttpRequest, Vec<&str>) -> HttpResponse,
+) -> Route {
+    let mut root = Route::new();
+
+    let mut cursor = &mut root;
+
+    for i in 0..flat.len() {
+        cursor.segment = flat[i];
+
+        if i == flat.len() - 1 {
+            cursor.method = Some(*method);
+            cursor.handler = Some(handler);
+        } else {
+            let new = Route::new();
+            cursor.children.push(new);
+            cursor = &mut cursor.children[0];
+        }
+    }
+
+    root
 }

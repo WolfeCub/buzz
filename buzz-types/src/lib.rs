@@ -13,5 +13,8 @@ pub use parser::*;
 mod route;
 pub use route::*;
 
+mod route_metadata;
+pub use route_metadata::*;
+
 pub mod errors;
 pub mod traits;

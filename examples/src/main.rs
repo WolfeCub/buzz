@@ -5,6 +5,21 @@ fn foo() -> impl Respond {
     "foo"
 }
 
+#[get("/foo/one")]
+fn fooone() -> impl Respond {
+    "foo"
+}
+
+#[get("/foo/two")]
+fn footwo() -> impl Respond {
+    "foo"
+}
+
+#[get("/foo/three/four")]
+fn foothree() -> impl Respond {
+    "foo"
+}
+
 #[get("/bar")]
 fn bar() -> impl Respond {
     format!("bar")
@@ -30,13 +45,22 @@ fn params(hello: String) -> impl Respond {
     hello
 }
 
+#[get("/params/{goodbye}/const")]
+fn paramsthree(goodbye: String) -> impl Respond {
+    goodbye
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .route(route!(foo))
+        .route(route!(fooone))
+        .route(route!(footwo))
+        .route(route!(foothree))
         .route(route!(bar))
         .route(route!(it))
         .route(route!(empty))
         .route(route!(other))
         .route(route!(params))
+        .route(route!(paramsthree))
         .run_server();
 }

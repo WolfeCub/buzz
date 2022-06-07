@@ -2,7 +2,7 @@ use buzz_types::errors::RouteParseError;
 use buzz_types::Parser;
 use quote::{quote, ToTokens}; 
 
-pub fn parse_route(attribute_path: String) -> Result<Route, RouteParseError> {
+pub fn parse_route(attribute_path: String) -> Result<Vec<SegmentType>, RouteParseError> {
     let parser = Parser::new(attribute_path.as_bytes());
 
     /* TODO: Maybe this doesn't actually make sense but for now it exists */
@@ -11,7 +11,7 @@ pub fn parse_route(attribute_path: String) -> Result<Route, RouteParseError> {
     }
 
     /* TODO: Maybe counting the '/'s and allocating the right amount is faster? */
-    let mut thing = Vec::new();
+    let mut list = Vec::new();
 
     while parser.remaining() > 0 {
         parser.consume(1);
@@ -22,22 +22,21 @@ pub fn parse_route(attribute_path: String) -> Result<Route, RouteParseError> {
 
         if cand[0] == b'{' && cand[cand.len() - 1] == b'}' {
             let var_name = parser.substr(start + 1, parser.offset() - 1);
-            thing.push(SegmentType::Variable(var_name.to_owned()));
+            list.push(SegmentType::Variable(var_name.to_owned()))
         } else {
             let var_name = parser.substr_to_offset(start);
-            thing.push(SegmentType::Const(var_name.to_owned()));
+            list.push(SegmentType::Const(var_name.to_owned()))
         }
     }
 
-    Ok(Route {
-        path: attribute_path,
-        segments: thing,
-    })
+    Ok(list)
 }
 
+#[derive(Debug)]
 pub enum SegmentType {
     Const(String),
     Variable(String),
+    SegNone,
 }
 
 impl ToTokens for SegmentType {
@@ -49,27 +48,9 @@ impl ToTokens for SegmentType {
             SegmentType::Variable(name) => tokens.extend(quote! {
                 ::buzz::types::SegmentType::Variable(#name)
             }),
+            SegmentType::SegNone => tokens.extend(quote! {
+                ::buzz::types::SegmentType::SegNone
+            }),
         }
-    }
-}
-
-pub struct Route {
-    pub path: String,
-    pub segments: Vec<SegmentType>,
-}
-
-impl ToTokens for Route {
-    fn to_tokens(&self, tokens: &mut quote::__private::TokenStream) {
-        let path = &self.path;
-        let segments = &self.segments;
-
-        let expanded = quote! {
-            ::buzz::types::Route {
-                path: #path,
-                segments: &[#(#segments,)*]
-            }
-        };
-
-        tokens.extend(expanded);
     }
 }
