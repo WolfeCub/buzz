@@ -37,7 +37,9 @@ impl Buzz {
             match segments[0] {
                 SegmentType::Const(text) => {
                     if let Some(route) = routes.iter_mut().find(|r| match r.segment {
-                        SegmentType::Const(route_text) => *text == *route_text,
+                        SegmentType::Const(route_text) => {
+                            *text == *route_text && r.method == Some(*method)
+                        }
                         _ => false,
                     }) {
                         recurse(&segments[1..], &mut route.children, method, handler);
@@ -67,6 +69,7 @@ impl Buzz {
     }
 
     pub fn run_server(&self) {
+        dbg!(&self.routes);
         let listener = TcpListener::bind(self.addr).unwrap();
 
         for stream in listener.incoming() {
@@ -127,7 +130,7 @@ fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Re
 fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<HttpResponse> {
     let segments: Vec<_> = request.path.split("/").filter(|p| !p.is_empty()).collect();
 
-    let candidates = route_tree_filter(&segments, &routes);
+    let candidates = route_tree_filter(&segments, &routes, request.method);
     let (handler, route) = find_most_specific(&candidates);
     let flat = unsafe_flatten(&route);
 
@@ -146,14 +149,7 @@ fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<H
     Some(handler(&request, vars))
 }
 
-struct FilterRoute {
-    pub segment: SegmentType,
-    pub children: Vec<Route>,
-    pub handler: Option<fn(&HttpRequest, Vec<&str>) -> HttpResponse>,
-    pub method: Option<HttpMethod>,
-}
-
-fn route_tree_filter<'a>(segments: &[&str], routes: &[Route]) -> Vec<Route> {
+fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod) -> Vec<Route> {
     if segments.len() <= 0 {
         return Vec::new();
     }
@@ -161,7 +157,7 @@ fn route_tree_filter<'a>(segments: &[&str], routes: &[Route]) -> Vec<Route> {
     let routes: Vec<_> = routes
         .iter()
         .filter(|r| match r.segment {
-            SegmentType::Const(text) => *text == *segments[0],
+            SegmentType::Const(text) => *text == *segments[0] && r.method == Some(method),
             SegmentType::Variable(_) => true,
             SegmentType::SegNone => false,
         })
@@ -171,7 +167,7 @@ fn route_tree_filter<'a>(segments: &[&str], routes: &[Route]) -> Vec<Route> {
         .iter()
         .map(|r| Route {
             segment: r.segment,
-            children: route_tree_filter(&segments[1..], &r.children),
+            children: route_tree_filter(&segments[1..], &r.children, method),
             handler: r.handler,
             method: r.method,
         })

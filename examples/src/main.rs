@@ -5,6 +5,11 @@ fn foo() -> impl Respond {
     "foo"
 }
 
+#[post("/foo")]
+fn blah() -> impl Respond {
+    "blah"
+}
+
 #[get("/foo/one")]
 fn fooone() -> impl Respond {
     "foo"
@@ -53,6 +58,7 @@ fn paramsthree(goodbye: String) -> impl Respond {
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .route(route!(foo))
+        .route(route!(blah))
         .route(route!(fooone))
         .route(route!(footwo))
         .route(route!(foothree))
