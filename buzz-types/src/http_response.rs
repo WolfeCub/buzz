@@ -32,7 +32,7 @@ impl HttpResponse {
 
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum HttpStatusCode {
     Ok = 200,

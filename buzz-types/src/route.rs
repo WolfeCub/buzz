@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{HttpMethod, HttpRequest, HttpResponse};
+use crate::{HttpMethod, Handler, HttpRequest, HttpResponse};
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum SegmentType {
@@ -13,7 +13,7 @@ pub enum SegmentType {
 pub struct Route {
     pub segment: SegmentType,
     pub children: Vec<Route>,
-    pub handler: Option<fn(&HttpRequest, Vec<&str>) -> HttpResponse>,
+    pub handler: Option<Handler>,
     pub method: Option<HttpMethod>,
 }
 

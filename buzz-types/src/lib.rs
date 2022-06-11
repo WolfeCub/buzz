@@ -16,5 +16,8 @@ pub use route::*;
 mod route_metadata;
 pub use route_metadata::*;
 
+mod handler;
+pub use handler::*;
+
 pub mod errors;
 pub mod traits;

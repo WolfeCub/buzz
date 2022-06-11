@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::ops::Index;
 
 use crate::http_parse::*;
 use buzz_types::*;
@@ -19,15 +21,12 @@ impl Buzz {
         }
     }
 
-    pub fn route(
-        mut self,
-        tuple: (fn(&HttpRequest, Vec<&str>) -> HttpResponse, RouteMetadata),
-    ) -> Self {
+    pub fn route(mut self, tuple: (Handler, RouteMetadata)) -> Self {
         fn recurse(
             segments: &[SegmentType],
             routes: &mut Vec<Route>,
             method: &HttpMethod,
-            handler: fn(&HttpRequest, Vec<&str>) -> HttpResponse,
+            handler: Handler,
         ) {
             if segments.len() == 0 {
                 return;
@@ -69,7 +68,6 @@ impl Buzz {
     }
 
     pub fn run_server(&self) {
-        dbg!(&self.routes);
         let listener = TcpListener::bind(self.addr).unwrap();
 
         for stream in listener.incoming() {
@@ -88,15 +86,16 @@ impl Buzz {
         stream.read(&mut buffer)?;
 
         let request = parse_http(&buffer)?;
+        let response = self.dispatch(request);
 
-        if let Some(response) = match_route_params(request, &self.routes) {
-            write_response(&mut stream, &response)?;
-            return Ok(());
-        }
-
-        write_response(&mut stream, &HttpResponse::new(HttpStatusCode::NotFound))?;
+        write_response(&mut stream, &response)?;
 
         Ok(())
+    }
+
+    pub fn dispatch(&self, request: HttpRequest) -> HttpResponse {
+        match_route_params(request, &self.routes)
+            .unwrap_or(HttpResponse::new(HttpStatusCode::NotFound))
     }
 }
 
@@ -128,9 +127,21 @@ fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Re
 }
 
 fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<HttpResponse> {
-    let segments: Vec<_> = request.path.split("/").filter(|p| !p.is_empty()).collect();
+    let query_seperator = request.path.chars().position(|c| c == '?');
+    let route_path = &request.path[0..(query_seperator.unwrap_or(request.path.len()))];
+    let segments: Vec<_> = route_path.split("/").filter(|p| !p.is_empty()).collect();
+
+    let query_params = if let Some(index) = query_seperator {
+        parse_query_params(&request.path[index + 1..])
+    } else {
+        HashMap::new()
+    };
 
     let candidates = route_tree_filter(&segments, &routes, request.method);
+
+    if candidates.len() == 0 {
+        return None;
+    };
     let (handler, route) = find_most_specific(&candidates);
     let flat = unsafe_flatten(&route);
 
@@ -146,7 +157,7 @@ fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<H
         })
         .collect();
 
-    Some(handler(&request, vars))
+    Some(handler(&request, vars, query_params))
 }
 
 fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod) -> Vec<Route> {
@@ -157,7 +168,15 @@ fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod
     let routes: Vec<_> = routes
         .iter()
         .filter(|r| match r.segment {
-            SegmentType::Const(text) => *text == *segments[0] && r.method == Some(method),
+            SegmentType::Const(text) => {
+                let text_matches = *text == *segments[0];
+                /* If this is the leaf then we should care about method */
+                if segments.len() == 1 {
+                    text_matches && r.method == Some(method)
+                } else {
+                    text_matches
+                }
+            }
             SegmentType::Variable(_) => true,
             SegmentType::SegNone => false,
         })
@@ -174,40 +193,37 @@ fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod
         .collect()
 }
 
-fn find_most_specific(routes: &[Route]) -> (fn(&HttpRequest, Vec<&str>) -> HttpResponse, Route) {
-    fn helper(
-        routes: &[Route],
-        depth: usize,
-    ) -> (usize, fn(&HttpRequest, Vec<&str>) -> HttpResponse, Route) {
+fn find_most_specific(routes: &[Route]) -> (Handler, Route) {
+    fn helper(routes: &[Route], depth: usize) -> Option<(usize, Handler, Route)> {
         routes
             .iter()
-            .map(|r| {
+            .filter_map(|r| {
                 if r.children.len() > 0 {
-                    let (depth, handler, route) = helper(&r.children, depth + 1);
-                    (
-                        depth,
-                        handler,
-                        Route {
-                            segment: r.segment,
-                            children: vec![route],
-                            handler: r.handler,
-                            method: r.method,
-                        },
-                    )
+                    helper(&r.children, depth + 1).map(|(depth, handler, route)| {
+                        (
+                            depth,
+                            handler,
+                            Route {
+                                segment: r.segment,
+                                children: vec![route],
+                                handler: r.handler,
+                                method: r.method,
+                            },
+                        )
+                    })
+                } else if r.handler.is_some() {
+                    Some((depth, r.handler.unwrap(), r.clone()))
                 } else {
-                    (
-                        depth,
-                        r.handler
-                            .expect("Somehow we're at a leaf that has no handler"),
-                        r.clone(),
-                    )
+                    None
                 }
             })
             .max_by_key(|r| r.0)
-            .unwrap()
     }
 
-    let (depth, handler, route) = helper(routes, 0);
+    /* TODO: Maybe don't assume this is the case so this helper can be used elsewhere? */
+    let (_, handler, route) = helper(routes, 0).expect(
+        "There's at least one route that exists since we check routes is non empty",
+    );
     (handler, route)
 }
 
@@ -232,11 +248,7 @@ fn unsafe_flatten(route: &Route) -> Vec<SegmentType> {
     acc
 }
 
-pub fn vec_to_route(
-    flat: &[SegmentType],
-    method: &HttpMethod,
-    handler: fn(&HttpRequest, Vec<&str>) -> HttpResponse,
-) -> Route {
+pub fn vec_to_route(flat: &[SegmentType], method: &HttpMethod, handler: Handler) -> Route {
     let mut root = Route::new();
 
     let mut cursor = &mut root;
@@ -255,4 +267,16 @@ pub fn vec_to_route(
     }
 
     root
+}
+
+pub fn parse_query_params(query_params: &str) -> HashMap<&str, &str> {
+    HashMap::from_iter(query_params.split("&").filter_map(|kvp| {
+        if kvp.is_empty() {
+            return None;
+        }
+
+        let index = kvp.chars().position(|c| c == '=');
+
+        index.map(|i| (&kvp[0..i], &kvp[i + 1..]))
+    }))
 }

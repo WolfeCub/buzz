@@ -1,7 +1,8 @@
+#![feature(let_chains)]
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use route_parser::{parse_route, SegmentType};
-use syn::{parse_macro_input, AttributeArgs, Ident, ItemFn, NestedMeta, FnArg, Pat};
+use syn::{parse_macro_input, AttributeArgs, FnArg, Ident, ItemFn, NestedMeta, Pat};
 
 mod route_parser;
 
@@ -33,35 +34,20 @@ fn make_metedata_name(name: &Ident) -> Ident {
     format_ident!("buzz_metadata_{}", name)
 }
 
+/* TODO: Type match and true to auto ".into()" */
 fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
     let name = &input.sig.ident;
     let wrapper_name = make_wrapper_name(name);
     let metadata_name = make_metedata_name(name);
 
-    let flat = match path {
-        NestedMeta::Lit(syn::Lit::Str(lit)) => parse_route(lit.value()).expect("Invalid route"),
-        _ => panic!("Argument must be a string literal"),
+    let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = path {
+        parse_route(lit.value()).expect("Invalid route")
+    } else {
+        return compile_error("Argument must be a string literal");
     };
 
-    /* TODO: Type match and true to auto ".into()" */
-    //let fargs: Vec<(&syn::Pat, &syn::Type)> = input
-    //    .sig
-    //    .inputs
-    //    .iter()
-    //    .filter_map(|arg| match arg {
-    //        syn::FnArg::Typed(pat_type) => {
-    //            if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
-    //                Some((&*pat_type.pat, &*pat_type.ty))
-    //            } else {
-    //                None
-    //            }
-    //        }
-    //        _ => None,
-    //    })
-    //    .collect();
-
-    let segment_vars: Vec<_> = flat
+    let user_route_variables: Vec<_> = user_route
         .iter()
         .filter_map(|seg| {
             if let SegmentType::Variable(name) = seg {
@@ -72,40 +58,79 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
         })
         .collect();
 
-    if input.sig.inputs.len() != segment_vars.len() {
-        panic!("Route params and arguments must be the same length");
-    }
+    /* TODO: Squash this and fn_args into a single iteration */
+    //for (seg_var, input_arg) in user_route_variables.iter().copied().zip(&input.sig.inputs) {
+    //    if let FnArg::Typed(pat_type) = input_arg {
+    //        if let Pat::Ident(pat_ident) = &*pat_type.pat {
+    //            let var_name = pat_ident.ident.to_string();
+    //            if *seg_var != var_name {
+    //                return compile_error(&format!(
+    //                    "Expected arg named `{}` but instead found: `{}`",
+    //                    seg_var, var_name
+    //                ));
+    //            }
+    //        } else {
+    //            return compile_error("Found untyped non-identifier arg");
+    //        }
+    //    } else {
+    //        return compile_error("Found self in args which is not allowed");
+    //    }
+    //}
 
-    for (seg_var, input_arg) in segment_vars.iter().copied().zip(&input.sig.inputs) {
-        if let FnArg::Typed(pat_type) = input_arg {
-            if let Pat::Ident(pat_ident) = &*pat_type.pat {
-                let var_name = pat_ident.ident.to_string();
-                if *seg_var != var_name {
-                    panic!("Expected arg named `{}` but instead found: `{}`", seg_var, var_name);
+    let fn_args: Vec<_> = input
+        .sig
+        .inputs
+        .iter()
+        .filter_map(|arg| {
+            match arg {
+                syn::FnArg::Typed(pat_type) => {
+                    if let syn::Pat::Ident(pat_ident) = &*pat_type.pat && let syn::Type::Path(type_path) = &*pat_type.ty {
+                        Some((&pat_ident.ident, &type_path.path.segments.last().expect("Every type has at least one segment").ident))
+                    } else {
+                        None
+                    }
                 }
-            } else {
-                panic!("Found untyped non-identifier arg");
+                _ => None,
             }
+        })
+        .collect();
+
+    let mut fn_arg_tokens = vec![];
+    let mut route_index = 0usize;
+
+    for (arg_name, arg_type) in fn_args.iter().copied() {
+        fn_arg_tokens.push(if arg_type.to_string() != "Option" {
+            let tmp = quote! {
+                String::from(route_params[#route_index])
+            };
+            route_index += 1;
+            tmp
         } else {
-            panic!("Found self in args which is not allowed");
-        }
+            let name = arg_name.to_string();
+            quote! {
+                query_params.get(#name).map(|n| String::from(*n))
+            }
+        });
     }
 
     let enum_name = format_ident!("{}", method);
-    let nums = 0..input.sig.inputs.len();
 
     let expanded = quote! {
         #input
 
-        fn #wrapper_name(request: &::buzz::types::HttpRequest, bindings: Vec<&str>) -> ::buzz::types::HttpResponse {
+        fn #wrapper_name(
+            request: &::buzz::types::HttpRequest,
+            route_params: Vec<&str>,
+            query_params: ::std::collections::HashMap<&str, &str>
+        ) -> ::buzz::types::HttpResponse {
             #name(
-                #(String::from(bindings[#nums]),)*
+                #(#fn_arg_tokens,)*
             ).respond()
         }
 
         #[allow(non_upper_case_globals)]
         const #metadata_name: ::buzz::types::RouteMetadata = ::buzz::types::RouteMetadata {
-            route: &[#(#flat,)*],
+            route: &[#(#user_route,)*],
             method: ::buzz::types::HttpMethod::#enum_name,
         };
     };
@@ -125,4 +150,8 @@ pub fn route(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(expanded)
+}
+
+fn compile_error(message: &str) -> TokenStream {
+    TokenStream::from(quote!(compile_error!(#message)))
 }

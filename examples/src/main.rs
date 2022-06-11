@@ -1,7 +1,7 @@
 use buzz::prelude::*;
 
 #[get("/foo")]
-fn foo() -> impl Respond {
+fn foo(thing: Option<String>) -> impl Respond {
     "foo"
 }
 
@@ -55,6 +55,11 @@ fn paramsthree(goodbye: String) -> impl Respond {
     goodbye
 }
 
+#[get("/query")]
+fn query(test: Option<String>) -> impl Respond {
+    test
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .route(route!(foo))
@@ -68,5 +73,6 @@ fn main() {
         .route(route!(other))
         .route(route!(params))
         .route(route!(paramsthree))
+        .route(route!(query))
         .run_server();
 }
