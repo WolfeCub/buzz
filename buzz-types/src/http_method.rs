@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+/// Represents an HTTP request method.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum HttpMethod {
     Get,

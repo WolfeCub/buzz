@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::HttpMethod;
 
+/// Representation of an HTTP request that's been parsed.
 #[derive(Debug)]
 pub struct HttpRequest {
     pub method: HttpMethod,

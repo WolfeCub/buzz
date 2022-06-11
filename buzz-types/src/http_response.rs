@@ -1,3 +1,20 @@
+/// Holds the data that will be formatted back into an HTTP response by the server.
+///
+/// This type is what [`respond`](crate::traits::Respond::respond) returns and since all
+/// [`Handler`](crate::handler::Handler) functions return a [`Respond`](crate::traits::Respond::respond)
+/// trait we can map from a `T where T: Respond` to a `HttpResponse`.
+///
+/// # Example
+///
+/// Consider the simple [`Handler`](crate::handler::Handler):
+/// ```ignore
+/// #[get("/foo")]
+/// fn foo() -> impl Respond {
+///     "foo"
+/// }
+/// ```
+/// This function returns the concrete type `&str` and since [`Respond`](crate::traits::Respond) is
+/// implemented for `&str` we can generate an `HttpResponse` to be sent to the caller.
 #[derive(Debug)]
 pub struct HttpResponse {
     pub status_code: HttpStatusCode,
@@ -32,6 +49,7 @@ impl HttpResponse {
 
 }
 
+/// Represents the status code of an HTTP response.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum HttpStatusCode {

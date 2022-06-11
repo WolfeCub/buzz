@@ -1,5 +1,5 @@
 use buzz_types::errors::RouteParseError;
-use buzz_types::Parser;
+use buzz_types::dev::Parser;
 use quote::{quote, ToTokens}; 
 
 pub fn parse_route(attribute_path: String) -> Result<Vec<SegmentType>, RouteParseError> {

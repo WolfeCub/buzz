@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use buzz_types::*;
+use buzz_types::dev::*;
 use buzz_types::errors::HttpParseError;
 
 #[cfg(test)]
