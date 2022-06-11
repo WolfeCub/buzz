@@ -1,8 +1,7 @@
-#![feature(let_chains)]
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use route_parser::{parse_route, SegmentType};
-use syn::{parse_macro_input, AttributeArgs, FnArg, Ident, ItemFn, NestedMeta, Pat};
+use route_parser::parse_route;
+use syn::{parse_macro_input, AttributeArgs, Ident, ItemFn, NestedMeta};
 
 mod route_parser;
 
@@ -47,53 +46,40 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
         return compile_error("Argument must be a string literal");
     };
 
-    let user_route_variables: Vec<_> = user_route
-        .iter()
-        .filter_map(|seg| {
-            if let SegmentType::Variable(name) = seg {
-                Some(name)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    /* TODO: Squash this and fn_args into a single iteration */
-    //for (seg_var, input_arg) in user_route_variables.iter().copied().zip(&input.sig.inputs) {
-    //    if let FnArg::Typed(pat_type) = input_arg {
-    //        if let Pat::Ident(pat_ident) = &*pat_type.pat {
-    //            let var_name = pat_ident.ident.to_string();
-    //            if *seg_var != var_name {
-    //                return compile_error(&format!(
-    //                    "Expected arg named `{}` but instead found: `{}`",
-    //                    seg_var, var_name
-    //                ));
-    //            }
-    //        } else {
-    //            return compile_error("Found untyped non-identifier arg");
-    //        }
-    //    } else {
-    //        return compile_error("Found self in args which is not allowed");
-    //    }
-    //}
-
-    let fn_args: Vec<_> = input
+    let fn_args_result = input
         .sig
         .inputs
         .iter()
-        .filter_map(|arg| {
-            match arg {
-                syn::FnArg::Typed(pat_type) => {
-                    if let syn::Pat::Ident(pat_ident) = &*pat_type.pat && let syn::Type::Path(type_path) = &*pat_type.ty {
-                        Some((&pat_ident.ident, &type_path.path.segments.last().expect("Every type has at least one segment").ident))
+        .map(|arg| {
+            if let syn::FnArg::Typed(pat_type) = arg {
+                if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
+                    if let syn::Type::Path(type_path) = &*pat_type.ty {
+                        Ok((
+                            &pat_ident.ident,
+                            &type_path
+                                .path
+                                .segments
+                                .last()
+                                .expect("Every type has at least one segment")
+                                .ident,
+                        ))
                     } else {
-                        None
+                        Err(compile_error("Type is not a path"))
                     }
+                } else {
+                    Err(compile_error("Found untyped non-identifier arg"))
                 }
-                _ => None,
+            } else {
+                Err(compile_error("Found self in args which is not allowed"))
             }
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>();
+
+    if let Err(e) = fn_args_result {
+        return TokenStream::from(e);
+    }
+
+    let fn_args = fn_args_result.unwrap();
 
     let mut fn_arg_tokens = vec![];
     let mut route_index = 0usize;
@@ -105,10 +91,10 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
                 quote! {
                     __query_params.get(#name).map(|n| String::from(*n))
                 }
-            },
+            }
             "BuzzContext" => {
                 quote!(__context)
-            },
+            }
             _ => {
                 let tmp = quote! {
                     String::from(__route_params[#route_index])

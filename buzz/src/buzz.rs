@@ -3,7 +3,6 @@ use std::error::Error;
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::ops::Index;
 
 use crate::http_parse::*;
 use buzz_types::*;

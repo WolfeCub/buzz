@@ -1,7 +1,7 @@
 use buzz::prelude::*;
 
 #[get("/foo")]
-fn foo(thing: Option<String>) -> impl Respond {
+fn foo() -> impl Respond {
     "foo"
 }
 

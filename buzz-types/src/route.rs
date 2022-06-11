@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{HttpMethod, Handler, HttpRequest, HttpResponse};
+use crate::{HttpMethod, Handler};
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum SegmentType {

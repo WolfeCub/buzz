@@ -36,7 +36,6 @@ pub fn parse_route(attribute_path: String) -> Result<Vec<SegmentType>, RoutePars
 pub enum SegmentType {
     Const(String),
     Variable(String),
-    SegNone,
 }
 
 impl ToTokens for SegmentType {
@@ -47,9 +46,6 @@ impl ToTokens for SegmentType {
             }),
             SegmentType::Variable(name) => tokens.extend(quote! {
                 ::buzz::types::SegmentType::Variable(#name)
-            }),
-            SegmentType::SegNone => tokens.extend(quote! {
-                ::buzz::types::SegmentType::SegNone
             }),
         }
     }
