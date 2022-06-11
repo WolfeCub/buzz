@@ -1,5 +1,5 @@
 use std::collections::HashMap;
 
-use crate::{HttpRequest, HttpResponse};
+use crate::{HttpRequest, HttpResponse, BuzzContext};
 
-pub type Handler = fn(&HttpRequest, Vec<&str>, HashMap<&str, &str>) -> HttpResponse;
+pub type Handler = fn(Vec<&str>, HashMap<&str, &str>, BuzzContext) -> HttpResponse;

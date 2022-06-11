@@ -99,16 +99,22 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
     let mut route_index = 0usize;
 
     for (arg_name, arg_type) in fn_args.iter().copied() {
-        fn_arg_tokens.push(if arg_type.to_string() != "Option" {
-            let tmp = quote! {
-                String::from(route_params[#route_index])
-            };
-            route_index += 1;
-            tmp
-        } else {
-            let name = arg_name.to_string();
-            quote! {
-                query_params.get(#name).map(|n| String::from(*n))
+        fn_arg_tokens.push(match arg_type.to_string().as_str() {
+            "Option" => {
+                let name = arg_name.to_string();
+                quote! {
+                    __query_params.get(#name).map(|n| String::from(*n))
+                }
+            },
+            "BuzzContext" => {
+                quote!(__context)
+            },
+            _ => {
+                let tmp = quote! {
+                    String::from(__route_params[#route_index])
+                };
+                route_index += 1;
+                tmp
             }
         });
     }
@@ -119,9 +125,9 @@ fn create_wrapper(method: &'static str, path: &NestedMeta, item: TokenStream) ->
         #input
 
         fn #wrapper_name(
-            request: &::buzz::types::HttpRequest,
-            route_params: Vec<&str>,
-            query_params: ::std::collections::HashMap<&str, &str>
+            __route_params: Vec<&str>,
+            __query_params: ::std::collections::HashMap<&str, &str>,
+            __context: ::buzz::types::BuzzContext,
         ) -> ::buzz::types::HttpResponse {
             #name(
                 #(#fn_arg_tokens,)*

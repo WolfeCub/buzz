@@ -61,6 +61,37 @@ fn query_many(one: Option<String>, two: Option<String>, three: Option<String>) -
     Some(format!("many|{}|{}|{}", one?, two?, three?))
 }
 
+#[get("/context-header")]
+fn context_header(context: BuzzContext) -> impl Respond {
+    context
+        .headers
+        .get("Header-Name")
+        .map(|h| format!("header|{h}"))
+}
+
+#[get("/combination/{route}")]
+fn combination(context: BuzzContext, route: String, optional: Option<String>) -> impl Respond {
+    let header = context.headers.get("Header-Name").map(|h| String::from(h));
+
+    Some(format!("combination|{}|{}|{}", route, optional?, header?))
+}
+
+#[get("/combination-mixed/{route_one}/{route_two}")]
+fn combination_mixed(
+    query_one: Option<String>,
+    route_one: String,
+    context: BuzzContext,
+    query_two: Option<String>,
+    route_two: String,
+) -> impl Respond {
+    let header = context.headers.get("Header-Name").map(|h| String::from(h));
+
+    Some(format!(
+        "combination-mixed|{}|{}|{}|{}|{}",
+        route_one, route_two, query_one?, query_two?, header?
+    ))
+}
+
 static BUZZ: OnceCell<Buzz> = OnceCell::new();
 
 fn make_buzz() -> Buzz {
@@ -76,23 +107,27 @@ fn make_buzz() -> Buzz {
         .route(route!(param_beginning))
         .route(route!(query_single))
         .route(route!(query_many))
+        .route(route!(context_header))
+        .route(route!(combination))
+        .route(route!(combination_mixed))
 }
 
 macro_rules! request {
     ($method:tt, $path:literal) => {
-        BUZZ.get_or_init(make_buzz).dispatch(HttpRequest {
-            method: HttpMethod::$method,
-            path: $path.to_owned(),
-            version: 1.1,
-            headers: HashMap::new(),
-        })
+        request!($method, $path.to_owned(),)
     };
     ($method:tt, $path:expr) => {
+        request!($method, $path,)
+    };
+    ($method:tt, $path:literal, $($key:literal: $value:expr),*) => {
+        request!($method, $path.to_owned(), $($key: $value),*)
+    };
+    ($method:tt, $path:expr, $($key:literal: $value:expr),*) => {
         BUZZ.get_or_init(make_buzz).dispatch(HttpRequest {
             method: HttpMethod::$method,
             path: $path,
             version: 1.1,
-            headers: HashMap::new(),
+            headers: HashMap::from_iter([$(($key.to_owned(), $value)),*]),
         })
     };
 }
@@ -182,7 +217,7 @@ proptest! {
 
 #[test]
 fn it_responds_to_query_single_no_params() {
-    let response = request!(Get, format!("/query-single"));
+    let response = request!(Get, "/query-single");
 
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::NotFound);
@@ -190,7 +225,10 @@ fn it_responds_to_query_single_no_params() {
 
 #[test]
 fn it_responds_to_query_single_wrong_params() {
-    let response = request!(Get, format!("/query-single?foo=blah&bar=some&hello=goodbye"));
+    let response = request!(
+        Get,
+        format!("/query-single?foo=blah&bar=some&hello=goodbye")
+    );
 
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::NotFound);
@@ -210,6 +248,7 @@ proptest! {
         assert_eq!(response.body.unwrap(), format!("many|{value1}|{value2}|{value3}"));
     }
 
+    #[test]
     fn it_responds_to_many_query_shuffled_order(
         value1 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
         value2 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
@@ -220,5 +259,54 @@ proptest! {
         assert!(response.body.is_some());
         assert_eq!(response.status_code, HttpStatusCode::Ok);
         assert_eq!(response.body.unwrap(), format!("many|{value1}|{value2}|{value3}"));
+    }
+
+    #[test]
+    fn it_responds_to_context_with_header(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+        let response = request!(
+            Get, "/context-header",
+            "Header-Name": value.clone()
+        );
+
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), format!("header|{value}"));
+    }
+
+    #[test]
+    fn it_responds_to_combination(
+        route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]",
+        query in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
+        header in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
+    ) {
+        let response = request!(
+            Get, format!("/combination/{route}?optional={query}"),
+            "Header-Name": header.clone()
+        );
+
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), format!("combination|{route}|{query}|{header}"));
+    }
+
+    #[test]
+    fn it_responds_to_combination_mixed(
+        route_one in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]",
+        route_two in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]",
+        query_one in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
+        query_two in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
+        header in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
+    ) {
+
+        let response = request!(
+            Get, format!("/combination-mixed/{route_one}/{route_two}?query_one={query_one}&query_two={query_two}"),
+            "Header-Name": header.clone()
+        );
+
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), format!(
+            "combination-mixed|{route_one}|{route_two}|{query_one}|{query_two}|{header}"
+        ));
     }
 }

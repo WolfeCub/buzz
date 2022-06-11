@@ -157,7 +157,11 @@ fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<H
         })
         .collect();
 
-    Some(handler(&request, vars, query_params))
+    let context = BuzzContext {
+        headers: request.headers,
+    };
+
+    Some(handler(vars, query_params, context))
 }
 
 fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod) -> Vec<Route> {
