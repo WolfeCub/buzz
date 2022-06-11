@@ -261,7 +261,35 @@
 <span id="256">256</span>
 <span id="257">257</span>
 <span id="258">258</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::error::Error</span>;
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+<span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::net::TcpListener</span>;
 <span class="kw">use</span> <span class="ident">std::net::TcpStream</span>;
@@ -282,15 +310,12 @@
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route</span>(
-        <span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">tuple</span>: (<span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">HttpResponse</span>, <span class="ident">RouteMetadata</span>),
-    ) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tuple</span>: (<span class="ident">Handler</span>, <span class="ident">RouteMetadata</span>)) -&gt; <span class="self">Self</span> {
         <span class="kw">fn</span> <span class="ident">recurse</span>(
             <span class="ident">segments</span>: <span class="kw-2">&amp;</span>[<span class="ident">SegmentType</span>],
             <span class="ident">routes</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span>,
             <span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">HttpMethod</span>,
-            <span class="ident">handler</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">HttpResponse</span>,
+            <span class="ident">handler</span>: <span class="ident">Handler</span>,
         ) {
             <span class="kw">if</span> <span class="ident">segments</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
                 <span class="kw">return</span>;
@@ -332,7 +357,6 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_server</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">routes</span>);
         <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">TcpListener::bind</span>(<span class="self">self</span>.<span class="ident">addr</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">for</span> <span class="ident">stream</span> <span class="kw">in</span> <span class="ident">listener</span>.<span class="ident">incoming</span>() {
@@ -351,15 +375,16 @@
         <span class="ident">stream</span>.<span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">parse_http</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dispatch</span>(<span class="ident">request</span>);
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">response</span>) <span class="op">=</span> <span class="ident">match_route_params</span>(<span class="ident">request</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">routes</span>) {
-            <span class="ident">write_response</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stream</span>, <span class="kw-2">&amp;</span><span class="ident">response</span>)<span class="question-mark">?</span>;
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-        }
-
-        <span class="ident">write_response</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stream</span>, <span class="kw-2">&amp;</span><span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::NotFound</span>))<span class="question-mark">?</span>;
+        <span class="ident">write_response</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stream</span>, <span class="kw-2">&amp;</span><span class="ident">response</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dispatch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">request</span>: <span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span> {
+        <span class="ident">match_route_params</span>(<span class="ident">request</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">routes</span>)
+            .<span class="ident">unwrap_or</span>(<span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::NotFound</span>))
     }
 }
 
@@ -391,9 +416,21 @@
 }
 
 <span class="kw">fn</span> <span class="ident">match_route_params</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">request</span>: <span class="ident">HttpRequest</span>, <span class="ident">routes</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">segments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">path</span>.<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="op">!</span><span class="ident">p</span>.<span class="ident">is_empty</span>()).<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="ident">query_seperator</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">path</span>.<span class="ident">chars</span>().<span class="ident">position</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;?&#39;</span>);
+    <span class="kw">let</span> <span class="ident">route_path</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">path</span>[<span class="number">0</span>..(<span class="ident">query_seperator</span>.<span class="ident">unwrap_or</span>(<span class="ident">request</span>.<span class="ident">path</span>.<span class="ident">len</span>()))];
+    <span class="kw">let</span> <span class="ident">segments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">route_path</span>.<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="op">!</span><span class="ident">p</span>.<span class="ident">is_empty</span>()).<span class="ident">collect</span>();
+
+    <span class="kw">let</span> <span class="ident">query_params</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="ident">query_seperator</span> {
+        <span class="ident">parse_query_params</span>(<span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">path</span>[<span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>..])
+    } <span class="kw">else</span> {
+        <span class="ident">HashMap::new</span>()
+    };
 
     <span class="kw">let</span> <span class="ident">candidates</span> <span class="op">=</span> <span class="ident">route_tree_filter</span>(<span class="kw-2">&amp;</span><span class="ident">segments</span>, <span class="kw-2">&amp;</span><span class="ident">routes</span>, <span class="ident">request</span>.<span class="ident">method</span>);
+
+    <span class="kw">if</span> <span class="ident">candidates</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">return</span> <span class="prelude-val">None</span>;
+    };
     <span class="kw">let</span> (<span class="ident">handler</span>, <span class="ident">route</span>) <span class="op">=</span> <span class="ident">find_most_specific</span>(<span class="kw-2">&amp;</span><span class="ident">candidates</span>);
     <span class="kw">let</span> <span class="ident">flat</span> <span class="op">=</span> <span class="ident">unsafe_flatten</span>(<span class="kw-2">&amp;</span><span class="ident">route</span>);
 
@@ -409,7 +446,11 @@
         })
         .<span class="ident">collect</span>();
 
-    <span class="prelude-val">Some</span>(<span class="ident">handler</span>(<span class="kw-2">&amp;</span><span class="ident">request</span>, <span class="ident">vars</span>))
+    <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">BuzzContext</span> {
+        <span class="ident">headers</span>: <span class="ident">request</span>.<span class="ident">headers</span>,
+    };
+
+    <span class="prelude-val">Some</span>(<span class="ident">handler</span>(<span class="ident">vars</span>, <span class="ident">query_params</span>, <span class="ident">context</span>))
 }
 
 <span class="kw">fn</span> <span class="ident">route_tree_filter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">segments</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>], <span class="ident">routes</span>: <span class="kw-2">&amp;</span>[<span class="ident">Route</span>], <span class="ident">method</span>: <span class="ident">HttpMethod</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> {
@@ -420,7 +461,15 @@
     <span class="kw">let</span> <span class="ident">routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">routes</span>
         .<span class="ident">iter</span>()
         .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">r</span>.<span class="ident">segment</span> {
-            <span class="ident">SegmentType::Const</span>(<span class="ident">text</span>) =&gt; <span class="kw-2">*</span><span class="ident">text</span> <span class="op">==</span> <span class="kw-2">*</span><span class="ident">segments</span>[<span class="number">0</span>] <span class="op">&amp;&amp;</span> <span class="ident">r</span>.<span class="ident">method</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">method</span>),
+            <span class="ident">SegmentType::Const</span>(<span class="ident">text</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">text_matches</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">text</span> <span class="op">==</span> <span class="kw-2">*</span><span class="ident">segments</span>[<span class="number">0</span>];
+                <span class="comment">/* If this is the leaf then we should care about method */</span>
+                <span class="kw">if</span> <span class="ident">segments</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+                    <span class="ident">text_matches</span> <span class="op">&amp;&amp;</span> <span class="ident">r</span>.<span class="ident">method</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">method</span>)
+                } <span class="kw">else</span> {
+                    <span class="ident">text_matches</span>
+                }
+            }
             <span class="ident">SegmentType::Variable</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
             <span class="ident">SegmentType::SegNone</span> =&gt; <span class="bool-val">false</span>,
         })
@@ -437,40 +486,37 @@
         .<span class="ident">collect</span>()
 }
 
-<span class="kw">fn</span> <span class="ident">find_most_specific</span>(<span class="ident">routes</span>: <span class="kw-2">&amp;</span>[<span class="ident">Route</span>]) -&gt; (<span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">HttpResponse</span>, <span class="ident">Route</span>) {
-    <span class="kw">fn</span> <span class="ident">helper</span>(
-        <span class="ident">routes</span>: <span class="kw-2">&amp;</span>[<span class="ident">Route</span>],
-        <span class="ident">depth</span>: <span class="ident">usize</span>,
-    ) -&gt; (<span class="ident">usize</span>, <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">HttpResponse</span>, <span class="ident">Route</span>) {
+<span class="kw">fn</span> <span class="ident">find_most_specific</span>(<span class="ident">routes</span>: <span class="kw-2">&amp;</span>[<span class="ident">Route</span>]) -&gt; (<span class="ident">Handler</span>, <span class="ident">Route</span>) {
+    <span class="kw">fn</span> <span class="ident">helper</span>(<span class="ident">routes</span>: <span class="kw-2">&amp;</span>[<span class="ident">Route</span>], <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Handler</span>, <span class="ident">Route</span>)<span class="op">&gt;</span> {
         <span class="ident">routes</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> {
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">children</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> {
-                    <span class="kw">let</span> (<span class="ident">depth</span>, <span class="ident">handler</span>, <span class="ident">route</span>) <span class="op">=</span> <span class="ident">helper</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">children</span>, <span class="ident">depth</span> <span class="op">+</span> <span class="number">1</span>);
-                    (
-                        <span class="ident">depth</span>,
-                        <span class="ident">handler</span>,
-                        <span class="ident">Route</span> {
-                            <span class="ident">segment</span>: <span class="ident">r</span>.<span class="ident">segment</span>,
-                            <span class="ident">children</span>: <span class="macro">vec!</span>[<span class="ident">route</span>],
-                            <span class="ident">handler</span>: <span class="ident">r</span>.<span class="ident">handler</span>,
-                            <span class="ident">method</span>: <span class="ident">r</span>.<span class="ident">method</span>,
-                        },
-                    )
+                    <span class="ident">helper</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">children</span>, <span class="ident">depth</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">depth</span>, <span class="ident">handler</span>, <span class="ident">route</span>)<span class="op">|</span> {
+                        (
+                            <span class="ident">depth</span>,
+                            <span class="ident">handler</span>,
+                            <span class="ident">Route</span> {
+                                <span class="ident">segment</span>: <span class="ident">r</span>.<span class="ident">segment</span>,
+                                <span class="ident">children</span>: <span class="macro">vec!</span>[<span class="ident">route</span>],
+                                <span class="ident">handler</span>: <span class="ident">r</span>.<span class="ident">handler</span>,
+                                <span class="ident">method</span>: <span class="ident">r</span>.<span class="ident">method</span>,
+                            },
+                        )
+                    })
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">handler</span>.<span class="ident">is_some</span>() {
+                    <span class="prelude-val">Some</span>((<span class="ident">depth</span>, <span class="ident">r</span>.<span class="ident">handler</span>.<span class="ident">unwrap</span>(), <span class="ident">r</span>.<span class="ident">clone</span>()))
                 } <span class="kw">else</span> {
-                    (
-                        <span class="ident">depth</span>,
-                        <span class="ident">r</span>.<span class="ident">handler</span>
-                            .<span class="ident">expect</span>(<span class="string">&quot;Somehow we&#39;re at a leaf that has no handler&quot;</span>),
-                        <span class="ident">r</span>.<span class="ident">clone</span>(),
-                    )
+                    <span class="prelude-val">None</span>
                 }
             })
             .<span class="ident">max_by_key</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="number">0</span>)
-            .<span class="ident">unwrap</span>()
     }
 
-    <span class="kw">let</span> (<span class="ident">depth</span>, <span class="ident">handler</span>, <span class="ident">route</span>) <span class="op">=</span> <span class="ident">helper</span>(<span class="ident">routes</span>, <span class="number">0</span>);
+    <span class="comment">/* TODO: Maybe don&#39;t assume this is the case so this helper can be used elsewhere? */</span>
+    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">handler</span>, <span class="ident">route</span>) <span class="op">=</span> <span class="ident">helper</span>(<span class="ident">routes</span>, <span class="number">0</span>).<span class="ident">expect</span>(
+        <span class="string">&quot;There&#39;s at least one route that exists since we check routes is non empty&quot;</span>,
+    );
     (<span class="ident">handler</span>, <span class="ident">route</span>)
 }
 
@@ -495,11 +541,7 @@
     <span class="ident">acc</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vec_to_route</span>(
-    <span class="ident">flat</span>: <span class="kw-2">&amp;</span>[<span class="ident">SegmentType</span>],
-    <span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">HttpMethod</span>,
-    <span class="ident">handler</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">HttpResponse</span>,
-) -&gt; <span class="ident">Route</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vec_to_route</span>(<span class="ident">flat</span>: <span class="kw-2">&amp;</span>[<span class="ident">SegmentType</span>], <span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">HttpMethod</span>, <span class="ident">handler</span>: <span class="ident">Handler</span>) -&gt; <span class="ident">Route</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">Route::new</span>();
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">root</span>;
@@ -518,6 +560,18 @@
     }
 
     <span class="ident">root</span>
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_query_params</span>(<span class="ident">query_params</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">HashMap</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="ident">HashMap::from_iter</span>(<span class="ident">query_params</span>.<span class="ident">split</span>(<span class="string">&quot;&amp;&quot;</span>).<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">kvp</span><span class="op">|</span> {
+        <span class="kw">if</span> <span class="ident">kvp</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        }
+
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">kvp</span>.<span class="ident">chars</span>().<span class="ident">position</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;=&#39;</span>);
+
+        <span class="ident">index</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> (<span class="kw-2">&amp;</span><span class="ident">kvp</span>[<span class="number">0</span>..<span class="ident">i</span>], <span class="kw-2">&amp;</span><span class="ident">kvp</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>..]))
+    }))
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>

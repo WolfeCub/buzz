@@ -1,1 +1,1 @@
-initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"fn":[["vec_to_route",""]],"macro":[["route",""]],"struct":[["Buzz",""]],"trait":[["Respond",""]]});
+initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"macro":[["route",""]],"struct":[["Buzz",""],["BuzzContext",""]],"trait":[["Respond",""]]});
