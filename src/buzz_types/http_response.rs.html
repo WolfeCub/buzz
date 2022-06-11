@@ -57,7 +57,42 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
-</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+</pre><pre class="rust"><code><span class="doccomment">/// Holds the data that will be formatted back into an HTTP response by the server.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This type is what [`respond`](crate::traits::Respond::respond) returns and since all</span>
+<span class="doccomment">/// [`Handler`](crate::handler::Handler) functions return a [`Respond`](crate::traits::Respond::respond)</span>
+<span class="doccomment">/// trait we can map from a `T where T: Respond` to a `HttpResponse`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Example</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Consider the simple [`Handler`](crate::handler::Handler):</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// #[get(&quot;/foo&quot;)]</span>
+<span class="doccomment">/// fn foo() -&gt; impl Respond {</span>
+<span class="doccomment">///     &quot;foo&quot;</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// This function returns the concrete type `&amp;str` and since [`Respond`](crate::traits::Respond) is</span>
+<span class="doccomment">/// implemented for `&amp;str` we can generate an `HttpResponse` to be sent to the caller.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">HttpResponse</span> {
     <span class="kw">pub</span> <span class="ident">status_code</span>: <span class="ident">HttpStatusCode</span>,
     <span class="kw">pub</span> <span class="ident">headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
@@ -91,6 +126,7 @@
 
 }
 
+<span class="doccomment">/// Represents the status code of an HTTP response.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u32</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">HttpStatusCode</span> {

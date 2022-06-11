@@ -56,7 +56,7 @@
 <span id="51">51</span>
 <span id="52">52</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::errors::RouteParseError</span>;
-<span class="kw">use</span> <span class="ident">buzz_types::Parser</span>;
+<span class="kw">use</span> <span class="ident">buzz_types::dev::Parser</span>;
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">ToTokens</span>}; 
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_route</span>(<span class="ident">attribute_path</span>: <span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SegmentType</span><span class="op">&gt;</span>, <span class="ident">RouteParseError</span><span class="op">&gt;</span> {

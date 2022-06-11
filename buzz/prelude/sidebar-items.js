@@ -1,1 +1,1 @@
-initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"macro":[["route",""]],"struct":[["Buzz",""],["BuzzContext",""]],"trait":[["Respond",""]]});
+initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"macro":[["route",""]],"struct":[["Buzz",""],["BuzzContext","Holds metadata about the incoming `HttpRequest` that’s being handled."]],"trait":[["Respond",""]]});

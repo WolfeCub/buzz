@@ -43,22 +43,62 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::fmt::Debug</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">HttpMethod</span>, <span class="ident">Handler</span>};
 
+<span class="doccomment">/// Represents the type of a url segment.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example the url `/foo/{varname}` would be broken down into `SegmentType::Const(&quot;foo&quot;)` and</span>
+<span class="doccomment">/// `SegmentType::Variable(&quot;varname&quot;)`. Since the matching behaviour is different between the two</span>
+<span class="doccomment">/// types it helps to have the differentiated.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SegmentType</span> {
+    <span class="doccomment">/// A static segment of a URL that will only match it&#39;s exact text</span>
     <span class="ident">Const</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>),
+    <span class="doccomment">/// A dynamic segment of the URL that can be passed in as a variable to a function</span>
     <span class="ident">Variable</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>),
+    <span class="doccomment">/// A placeholder for empty or terminal segments</span>
     <span class="ident">SegNone</span>,
 }
 
+<span class="doccomment">/// Represents a tree of url routes.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Route</span> {
+    <span class="doccomment">/// Denotes the type of this portion of the url.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See [`SegmentType`] for more details.</span>
     <span class="kw">pub</span> <span class="ident">segment</span>: <span class="ident">SegmentType</span>,
+    <span class="doccomment">/// Recursively contains routes that share this segment as a prefix.</span>
     <span class="kw">pub</span> <span class="ident">children</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The function that should be called when this route is hit.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is [`Option`]al since not every part of the tree is routeable.</span>
+    <span class="doccomment">/// Consider a server that has `/foo/bar` and `/foo/quox` as routes.</span>
+    <span class="doccomment">/// `foo` would appear in the tree as a [`Route`] yet it&#39;s not valid to hit on it&#39;s own</span>
     <span class="kw">pub</span> <span class="ident">handler</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Handler</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// If the route is valid to be hit (see [`Route::handler`] for more details) this determines</span>
+    <span class="doccomment">/// what HTTP methods are valid for it.</span>
     <span class="kw">pub</span> <span class="ident">method</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">HttpMethod</span><span class="op">&gt;</span>,
 }
 

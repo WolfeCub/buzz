@@ -29,7 +29,22 @@
 <span id="24">24</span>
 <span id="25">25</span>
 <span id="26">26</span>
-</pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">http_method</span>;
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+</pre><pre class="rust"><code><span class="doccomment">//! This crate contains common types that are used by multiple other buzz crates</span>
+
+<span class="doccomment">/// Contains error types</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">errors</span>;
+<span class="doccomment">/// Contains traits</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">traits</span>;
+
+<span class="kw">mod</span> <span class="ident">http_method</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">http_method</span>::<span class="kw-2">*</span>;
 
 <span class="kw">mod</span> <span class="ident">http_request</span>;
@@ -37,9 +52,6 @@
 
 <span class="kw">mod</span> <span class="ident">http_response</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">http_response</span>::<span class="kw-2">*</span>;
-
-<span class="kw">mod</span> <span class="ident">parser</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">parser</span>::<span class="kw-2">*</span>;
 
 <span class="kw">mod</span> <span class="ident">route</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">route</span>::<span class="kw-2">*</span>;
@@ -53,8 +65,12 @@
 <span class="kw">mod</span> <span class="ident">buzz_context</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_context</span>::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">errors</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">traits</span>;
+<span class="kw">mod</span> <span class="ident">parser</span>;
+
+<span class="doccomment">/// Contains things are used internally by Buzz across crates that are not meant for user consuption</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">dev</span> {
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::parser</span>::<span class="kw-2">*</span>;
+}
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_types" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
 </body></html>

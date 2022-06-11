@@ -8,8 +8,10 @@
 <span id="3">3</span>
 <span id="4">4</span>
 <span id="5">5</span>
+<span id="6">6</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
+<span class="doccomment">/// Holds metadata about the incoming `HttpRequest` that&#39;s being handled.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BuzzContext</span> {
     <span class="kw">pub</span> <span class="ident">headers</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
 }
