@@ -46,6 +46,28 @@ impl Route {
             method: None,
         }
     }
+
+    pub fn from_vec(flat: &[SegmentType], method: &HttpMethod, handler: Handler) -> Route {
+        let mut root = Route::new();
+
+        let mut cursor = &mut root;
+
+        for i in 0..flat.len() {
+            cursor.segment = flat[i];
+
+            if i == flat.len() - 1 {
+                cursor.method = Some(*method);
+                cursor.handler = Some(handler);
+            } else {
+                let new = Route::new();
+                cursor.children.push(new);
+                cursor = &mut cursor.children[0];
+            }
+        }
+
+        root
+    }
+
 }
 
 impl Debug for Route {
@@ -58,3 +80,4 @@ impl Debug for Route {
             .finish()
     }
 }
+

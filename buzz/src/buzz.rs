@@ -31,33 +31,32 @@ impl Buzz {
                 return;
             }
 
-            /* TODO: Lots 'o repetition. Refactor this */
-            match segments[0] {
-                SegmentType::Const(text) => {
-                    if let Some(route) = routes.iter_mut().find(|r| match r.segment {
-                        SegmentType::Const(route_text) => {
-                            *text == *route_text && r.method == Some(*method)
-                        }
-                        _ => false,
-                    }) {
-                        recurse(&segments[1..], &mut route.children, method, handler);
-                    } else {
-                        routes.push(vec_to_route(segments, method, handler));
+            if !routes.iter_mut().any(|route| {
+                /* If the verbatim text matches or the variable is the right name then we can
+                 * look deeper down that route since it could potentially still match.
+                 */
+                if match (segments[0], route.segment) {
+                    (SegmentType::Const(text), SegmentType::Const(route_text))
+                        if *text == *route_text && route.method == Some(*method) =>
+                    {
+                        true
                     }
-                }
-                SegmentType::Variable(var_name) => {
-                    if let Some(route) = routes.iter_mut().find(|r| match r.segment {
-                        SegmentType::Variable(route_var_name) => *var_name == *route_var_name,
-                        _ => false,
-                    }) {
-                        recurse(&segments[1..], &mut route.children, method, handler);
-                    } else {
-                        routes.push(vec_to_route(segments, method, handler));
+
+                    (SegmentType::Variable(var_name), SegmentType::Variable(route_var_name))
+                        if *var_name == *route_var_name =>
+                    {
+                        true
                     }
+                    _ => false,
+                } {
+                    recurse(&segments[1..], &mut route.children, method, handler);
+                    true
+                } else {
+                    false
                 }
-                SegmentType::SegNone => {
-                    routes.push(vec_to_route(segments, method, handler));
-                }
+            }) {
+                /* If we don't match anything then this is the point where the route is new so we add it */
+                routes.push(Route::from_vec(segments, method, handler));
             }
         }
 
@@ -137,11 +136,7 @@ fn match_route_params<'a>(request: HttpRequest, routes: &Vec<Route>) -> Option<H
     };
 
     let candidates = route_tree_filter(&segments, &routes, request.method);
-
-    if candidates.len() == 0 {
-        return None;
-    };
-    let (handler, route) = find_most_specific(&candidates);
+    let (handler, route) = find_most_specific(&candidates)?;
     let flat = unsafe_flatten(&route);
 
     let vars = flat
@@ -196,7 +191,7 @@ fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod
         .collect()
 }
 
-fn find_most_specific(routes: &[Route]) -> (Handler, Route) {
+fn find_most_specific(routes: &[Route]) -> Option<(Handler, Route)> {
     fn helper(routes: &[Route], depth: usize) -> Option<(usize, Handler, Route)> {
         routes
             .iter()
@@ -223,11 +218,7 @@ fn find_most_specific(routes: &[Route]) -> (Handler, Route) {
             .max_by_key(|r| r.0)
     }
 
-    /* TODO: Maybe don't assume this is the case so this helper can be used elsewhere? */
-    let (_, handler, route) = helper(routes, 0).expect(
-        "There's at least one route that exists since we check routes is non empty",
-    );
-    (handler, route)
+    helper(routes, 0).map(|(_, handler, route)| (handler, route))
 }
 
 fn unsafe_flatten(route: &Route) -> Vec<SegmentType> {
@@ -249,27 +240,6 @@ fn unsafe_flatten(route: &Route) -> Vec<SegmentType> {
     }
 
     acc
-}
-
-pub fn vec_to_route(flat: &[SegmentType], method: &HttpMethod, handler: Handler) -> Route {
-    let mut root = Route::new();
-
-    let mut cursor = &mut root;
-
-    for i in 0..flat.len() {
-        cursor.segment = flat[i];
-
-        if i == flat.len() - 1 {
-            cursor.method = Some(*method);
-            cursor.handler = Some(handler);
-        } else {
-            let new = Route::new();
-            cursor.children.push(new);
-            cursor = &mut cursor.children[0];
-        }
-    }
-
-    root
 }
 
 pub fn parse_query_params(query_params: &str) -> HashMap<&str, &str> {
