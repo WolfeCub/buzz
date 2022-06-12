@@ -6,45 +6,9 @@ use buzz_types::HttpMethod;
 
 mod route_parser;
 
-macro_rules! generate_wrapper_macro {
-    ($name:ident, $enum_method:tt) => {
-        #[proc_macro_attribute]
-        pub fn $name(attr: TokenStream, item: TokenStream) -> TokenStream {
-            let args = parse_macro_input!(attr as AttributeArgs);
-            let path = &args[0];
-
-            create_wrapper(HttpMethod::$enum_method, path, item)
-        }
-    };
-}
-
-generate_wrapper_macro!(get, Get);
-generate_wrapper_macro!(put, Put);
-generate_wrapper_macro!(post, Post);
-generate_wrapper_macro!(delete, Delete);
-generate_wrapper_macro!(patch, Patch);
-generate_wrapper_macro!(options, Options);
-
-fn make_wrapper_name(name: &Ident) -> Ident {
-    format_ident!("buzz_wrapper_{}", name)
-}
-
-fn make_metedata_name(name: &Ident) -> Ident {
-    format_ident!("buzz_metadata_{}", name)
-}
-
 /* TODO: Type match and true to auto ".into()" */
 fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
-    let name = &input.sig.ident;
-    let wrapper_name = make_wrapper_name(name);
-    let metadata_name = make_metedata_name(name);
-
-    let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = path {
-        parse_route(lit.value()).expect("Invalid route")
-    } else {
-        return compile_error("Argument must be a string literal");
-    };
 
     let fn_args_result = input
         .sig
@@ -60,7 +24,7 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
                                 .path
                                 .segments
                                 .last()
-                                .expect("Every type has at least one segment")
+                                .ok_or(compile_error("Every type has at least one segment"))?
                                 .ident,
                         ))
                     } else {
@@ -79,13 +43,10 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
         return TokenStream::from(e);
     }
 
-    let fn_args = fn_args_result.unwrap();
-
-    let mut fn_arg_tokens = vec![];
     let mut route_index = 0usize;
 
-    for (arg_name, arg_type) in fn_args.iter().copied() {
-        fn_arg_tokens.push(match arg_type.to_string().as_str() {
+    let fn_arg_tokens = fn_args_result.unwrap().into_iter().map(|(arg_name, arg_type)| {
+        match arg_type.to_string().as_str() {
             "Option" => {
                 let name = arg_name.to_string();
                 quote! {
@@ -102,10 +63,19 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
                 route_index += 1;
                 tmp
             }
-        });
-    }
+        }
+    });
+
+    let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = path {
+        parse_route(lit.value()).expect("Invalid route")
+    } else {
+        return compile_error("Argument must be a string literal");
+    };
 
     let enum_name = format_ident!("{}", format!("{:#?}", method));
+    let name = &input.sig.ident;
+    let wrapper_name = make_wrapper_name(name);
+    let metadata_name = make_metedata_name(name);
 
     let expanded = quote! {
         #input
@@ -144,6 +114,34 @@ pub fn route(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+macro_rules! generate_wrapper_macro {
+    ($name:ident, $enum_method:tt) => {
+        #[proc_macro_attribute]
+        pub fn $name(attr: TokenStream, item: TokenStream) -> TokenStream {
+            let args = parse_macro_input!(attr as AttributeArgs);
+            let path = &args[0];
+
+            create_wrapper(HttpMethod::$enum_method, path, item)
+        }
+    };
+}
+
+generate_wrapper_macro!(get, Get);
+generate_wrapper_macro!(put, Put);
+generate_wrapper_macro!(post, Post);
+generate_wrapper_macro!(delete, Delete);
+generate_wrapper_macro!(patch, Patch);
+generate_wrapper_macro!(options, Options);
+
+
 fn compile_error(message: &str) -> TokenStream {
     TokenStream::from(quote!(compile_error!(#message)))
+}
+
+fn make_wrapper_name(name: &Ident) -> Ident {
+    format_ident!("buzz_wrapper_{}", name)
+}
+
+fn make_metedata_name(name: &Ident) -> Ident {
+    format_ident!("buzz_metadata_{}", name)
 }
