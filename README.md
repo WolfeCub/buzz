@@ -1,5 +1,7 @@
 # Buzz
 
+<!-- cargo-rdme start -->
+
 A rust web framework that avoids dependancies wherever possible.
 
 ```rust
@@ -46,5 +48,6 @@ fn main() {
         .routes(routes!(foo, it, empty, other, params, query, context))
         .run_server();
 }
-
 ```
+
+<!-- cargo-rdme end -->
