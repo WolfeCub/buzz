@@ -30,8 +30,9 @@ fn params(hello: String) -> impl Respond {
     hello
 }
 
-#[get("/query")] // will match ?arg=something
+#[get("/query")]
 fn query(arg: Option<String>) -> impl Respond {
+    // will capture ?arg=something
     arg
 }
 
@@ -42,14 +43,7 @@ fn context(context: BuzzContext) -> impl Respond {
 
 fn main() {
     Buzz::new("127.0.0.1:8080")
-        .route(route!(foo))
-        .route(route!(bar))
-        .route(route!(it))
-        .route(route!(empty))
-        .route(route!(other))
-        .route(route!(params))
-        .route(route!(query))
-        .route(route!(context))
+        .routes(routes!(foo, it, empty, other, params, query, context))
         .run_server();
 }
 

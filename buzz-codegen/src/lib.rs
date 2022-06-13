@@ -1,8 +1,11 @@
+use buzz_types::HttpMethod;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use route_parser::parse_route;
-use syn::{parse_macro_input, AttributeArgs, Ident, ItemFn, NestedMeta};
-use buzz_types::HttpMethod;
+use syn::{
+    parse_macro_input, punctuated::Punctuated, token::Comma, AttributeArgs, Ident, ItemFn,
+    NestedMeta,
+};
 
 mod route_parser;
 
@@ -45,8 +48,10 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
 
     let mut route_index = 0usize;
 
-    let fn_arg_tokens = fn_args_result.unwrap().into_iter().map(|(arg_name, arg_type)| {
-        match arg_type.to_string().as_str() {
+    let fn_arg_tokens = fn_args_result
+        .unwrap()
+        .into_iter()
+        .map(|(arg_name, arg_type)| match arg_type.to_string().as_str() {
             "Option" => {
                 let name = arg_name.to_string();
                 quote! {
@@ -63,8 +68,7 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
                 route_index += 1;
                 tmp
             }
-        }
-    });
+        });
 
     let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = path {
         parse_route(lit.value()).expect("Invalid route")
@@ -114,6 +118,24 @@ pub fn route(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+#[proc_macro]
+pub fn routes(input: TokenStream) -> TokenStream {
+    let identifiers = parse_macro_input!(input with Punctuated::<Ident, Comma>::parse_terminated);
+
+    let quotes = identifiers.into_iter().map(|ident| {
+        let wrapper_name = make_wrapper_name(&ident);
+        let metadata_name = make_metedata_name(&ident);
+
+        quote! {
+            (#wrapper_name, #metadata_name)
+        }
+    });
+
+    TokenStream::from(quote! {
+        vec![#(#quotes),*]
+    })
+}
+
 macro_rules! generate_wrapper_macro {
     ($name:ident, $enum_method:tt) => {
         #[proc_macro_attribute]
@@ -132,7 +154,6 @@ generate_wrapper_macro!(post, Post);
 generate_wrapper_macro!(delete, Delete);
 generate_wrapper_macro!(patch, Patch);
 generate_wrapper_macro!(options, Options);
-
 
 fn compile_error(message: &str) -> TokenStream {
     TokenStream::from(quote!(compile_error!(#message)))

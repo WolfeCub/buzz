@@ -20,7 +20,11 @@ impl Buzz {
         }
     }
 
-    pub fn route(mut self, tuple: (Handler, RouteMetadata)) -> Self {
+    pub fn route(mut self, route: (Handler, RouteMetadata)) -> Self {
+        self.routes(vec![route])
+    }
+
+    pub fn routes(mut self, routes: Vec<(Handler, RouteMetadata)>) -> Self {
         fn recurse(
             segments: &[SegmentType],
             routes: &mut Vec<Route>,
@@ -60,7 +64,9 @@ impl Buzz {
             }
         }
 
-        recurse(tuple.1.route, &mut self.routes, &tuple.1.method, tuple.0);
+        for (handler, metadata) in routes {
+            recurse(metadata.route, &mut self.routes, &metadata.method, handler);
+        }
 
         self
     }

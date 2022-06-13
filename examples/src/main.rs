@@ -62,17 +62,19 @@ fn query(test: Option<String>) -> impl Respond {
 
 fn main() {
     Buzz::new("127.0.0.1:8080")
-        .route(route!(foo))
-        .route(route!(blah))
-        .route(route!(fooone))
-        .route(route!(footwo))
-        .route(route!(foothree))
-        .route(route!(bar))
-        .route(route!(it))
-        .route(route!(empty))
-        .route(route!(other))
-        .route(route!(params))
-        .route(route!(paramsthree))
-        .route(route!(query))
+        .routes(routes!(
+            foo,
+            blah,
+            fooone,
+            footwo,
+            foothree,
+            bar,
+            it,
+            empty,
+            other,
+            params,
+            paramsthree,
+            query
+        ))
         .run_server();
 }
