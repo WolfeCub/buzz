@@ -37,6 +37,11 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This crate contains common types that are used by multiple other buzz crates</span>
 
 <span class="doccomment">/// Contains error types</span>
@@ -65,11 +70,16 @@
 <span class="kw">mod</span> <span class="ident">buzz_context</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_context</span>::<span class="kw-2">*</span>;
 
+<span class="kw">mod</span> <span class="ident">inject</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">inject</span>::<span class="kw-2">*</span>;
+
+<span class="kw">mod</span> <span class="ident">dependancy_injection</span>;
 <span class="kw">mod</span> <span class="ident">parser</span>;
 
 <span class="doccomment">/// Contains things are used internally by Buzz across crates that are not meant for user consuption</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">dev</span> {
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::parser</span>::<span class="kw-2">*</span>;
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::dependancy_injection</span>::<span class="kw-2">*</span>;
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_types" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>

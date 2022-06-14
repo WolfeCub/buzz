@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Parser",""]]});
+initSidebarItems({"struct":[["DependancyInjection",""],["Parser",""]]});

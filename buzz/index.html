@@ -4,49 +4,65 @@
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"><a href="#">Crate buzz</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></div></ul><section><div class="block"><ul><li><a href="#modules">Modules</a></li></ul></div></section><div id="sidebar-vars" data-name="buzz" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../buzz/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">buzz</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/buzz/lib.rs.html#1-61">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A rust web framework that avoids dependancies wherever possible.</p>
+    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">buzz</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/buzz/lib.rs.html#1-78">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A rust web framework that avoids dependancies wherever possible.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">buzz::prelude</span>::<span class="kw-2">*</span>;
 
+<span class="comment">// &amp;str behaves as expected</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/foo&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">foo</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="string">&quot;foo&quot;</span>
 }
 
+<span class="comment">// Some varients work as long as the inside implements Respond</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/it&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">it</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="prelude-val">Some</span>(<span class="string">&quot;it&quot;</span>)
 }
 
+<span class="comment">// Returning None gives you a 404</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/empty&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">empty</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="prelude-ty">Option</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span><span class="ident">::None</span>
 }
 
+<span class="comment">// Returning an Err gives you a 500 with the corresponding Err content</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/other&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">other</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="prelude-ty">Result</span>::<span class="op">&lt;</span>(), <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::Err</span>(<span class="ident">std::fmt::Error::default</span>())
 }
 
+<span class="comment">// Query parameters are just regular arguments</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/params/{hello}&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">params</span>(<span class="ident">hello</span>: <span class="ident">String</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="ident">hello</span>
 }
 
+<span class="comment">// Query params are also just args but are Optional</span>
+<span class="comment">// In the case of ?arg=something arg here will be Some(&quot;something&quot;)</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/query&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">query</span>(<span class="ident">arg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
-    <span class="comment">// will capture ?arg=something</span>
     <span class="ident">arg</span>
 }
 
+<span class="comment">// BuzzContext can be injected anywhere and get extra info about the request</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/context&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">context</span>(<span class="ident">context</span>: <span class="ident">BuzzContext</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="ident">context</span>.<span class="ident">headers</span>.<span class="ident">get</span>(<span class="string">&quot;Some-Header&quot;</span>).<span class="ident">map</span>(<span class="ident">String::from</span>)
 }
 
+<span class="comment">// Registered params can be injected anywhere with the special type Inject</span>
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/inject&quot;</span>)]</span>
+<span class="kw">fn</span> <span class="ident">inject</span>(<span class="ident">val</span>: <span class="ident">Inject</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
+    <span class="ident">val</span>.<span class="ident">get</span>().<span class="ident">to_string</span>()
+}
+
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="ident">Buzz::new</span>(<span class="string">&quot;127.0.0.1:8080&quot;</span>)
+        <span class="comment">// Here we register all our routes</span>
         .<span class="ident">routes</span>(<span class="macro">routes!</span>(<span class="ident">foo</span>, <span class="ident">it</span>, <span class="ident">empty</span>, <span class="ident">other</span>, <span class="ident">params</span>, <span class="ident">query</span>, <span class="ident">context</span>))
+        <span class="comment">// Here we register a type that can be injected</span>
+        .<span class="ident">register</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>(<span class="number">42</span>)
         .<span class="ident">run_server</span>();
 }</code></pre></div>
 </div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2>

@@ -64,51 +64,84 @@
 <span id="59">59</span>
 <span id="60">60</span>
 <span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
 </pre><pre class="rust"><code><span class="doccomment">/*!
 A rust web framework that avoids dependancies wherever possible.
 
 ```no_run
 use buzz::prelude::*;
 
+// &amp;str behaves as expected
 #[get(&quot;/foo&quot;)]
 fn foo() -&gt; impl Respond {
     &quot;foo&quot;
 }
 
+// Some varients work as long as the inside implements Respond
 #[get(&quot;/it&quot;)]
 fn it() -&gt; impl Respond {
     Some(&quot;it&quot;)
 }
 
+// Returning None gives you a 404
 #[get(&quot;/empty&quot;)]
 fn empty() -&gt; impl Respond {
     Option::&lt;()&gt;::None
 }
 
+// Returning an Err gives you a 500 with the corresponding Err content
 #[get(&quot;/other&quot;)]
 fn other() -&gt; impl Respond {
     Result::&lt;(), _&gt;::Err(std::fmt::Error::default())
 }
 
+// Query parameters are just regular arguments
 #[get(&quot;/params/{hello}&quot;)]
 fn params(hello: String) -&gt; impl Respond {
     hello
 }
 
+// Query params are also just args but are Optional
+// In the case of ?arg=something arg here will be Some(&quot;something&quot;)
 #[get(&quot;/query&quot;)]
 fn query(arg: Option&lt;String&gt;) -&gt; impl Respond {
-    // will capture ?arg=something
     arg
 }
 
+// BuzzContext can be injected anywhere and get extra info about the request
 #[get(&quot;/context&quot;)]
 fn context(context: BuzzContext) -&gt; impl Respond {
     context.headers.get(&quot;Some-Header&quot;).map(String::from)
 }
 
+// Registered params can be injected anywhere with the special type Inject
+#[get(&quot;/inject&quot;)]
+fn inject(val: Inject&lt;i32&gt;) -&gt; impl Respond {
+    val.get().to_string()
+}
+
 fn main() {
     Buzz::new(&quot;127.0.0.1:8080&quot;)
+        // Here we register all our routes
         .routes(routes!(foo, it, empty, other, params, query, context))
+        // Here we register a type that can be injected
+        .register::&lt;i32&gt;(42)
         .run_server();
 }
 ```
@@ -116,13 +149,14 @@ fn main() {
 
 <span class="kw">mod</span> <span class="ident">http_parse</span>;
 <span class="kw">mod</span> <span class="ident">buzz</span>;
+<span class="kw">mod</span> <span class="ident">routes</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types</span> <span class="kw">as</span> <span class="ident">types</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">prelude</span> {
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::buzz::Buzz</span>;
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types::traits::Respond</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types::BuzzContext</span>;
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types</span>::{<span class="ident">BuzzContext</span>, <span class="ident">Inject</span>};
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_codegen</span>::<span class="kw-2">*</span>;
 }
 </code></pre></div>
