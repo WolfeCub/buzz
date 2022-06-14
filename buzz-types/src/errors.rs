@@ -24,3 +24,10 @@ pub enum RouteParseError {
     #[error("RotueParseError: Missing leading slash on route")]
     MissingLeadingSlash,
 }
+
+
+#[derive(Error, Debug)]
+pub enum BuzzError {
+    #[error("Use of unregistered type: `{0}`")]
+    UseOfUnregesteredInject(String),
+}

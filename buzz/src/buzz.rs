@@ -1,5 +1,3 @@
-use std::any::{Any, TypeId};
-use std::collections::HashMap;
 use std::error::Error;
 use std::io::prelude::*;
 use std::net::TcpListener;
@@ -7,8 +5,8 @@ use std::net::TcpStream;
 
 use crate::http_parse::*;
 use crate::routes::*;
-use buzz_types::*;
 use buzz_types::dev::DependancyInjection;
+use buzz_types::*;
 
 pub struct Buzz {
     addr: &'static str,
@@ -30,7 +28,7 @@ impl Buzz {
         self
     }
 
-    pub fn route(mut self, route: (Handler, RouteMetadata)) -> Self {
+    pub fn route(self, route: (Handler, RouteMetadata)) -> Self {
         self.routes(vec![route])
     }
 
@@ -66,8 +64,11 @@ impl Buzz {
     }
 
     pub fn dispatch(&self, request: HttpRequest) -> HttpResponse {
-        self.routes.match_route_params(request, &self.di)
-            .unwrap_or(HttpResponse::new(HttpStatusCode::NotFound))
+        self.routes
+            .match_route_params(request, &self.di)
+            .unwrap_or_else(|e| {
+                HttpResponse::new(HttpStatusCode::InternalServerError).body(e.to_string())
+            })
     }
 }
 
@@ -97,4 +98,3 @@ fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Re
     stream.shutdown(std::net::Shutdown::Both)?;
     Ok(())
 }
-

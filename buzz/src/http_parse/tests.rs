@@ -1,14 +1,6 @@
 use super::*;
 use proptest::prelude::*;
 
-#[test]
-fn debug() {
-    let format = "\r\n";
-    let parser = Parser::new(format.as_bytes());
-
-    dbg!(parse_http_header(&parser));
-}
-
 proptest! {
     #[test]
     fn parses_valid_http_methods(test_method in "GET|PUT|POST|DELETE|PATCH|OPTIONS") {

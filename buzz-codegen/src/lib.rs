@@ -50,40 +50,50 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
         vec!["buzz", "prelude", "Inject"],
     ];
 
-    let fn_arg_tokens = fn_args_result.unwrap().into_iter().map(|(arg_name, path)| {
-        if match_path(&option_paths, &path) {
-            let name = arg_name.to_string();
-            quote! {
-                __query_params.get(#name).map(|n| String::from(*n))
-            }
-        } else if match_path(&context_paths, &path) {
-            quote!(__context)
-        } else if match_path(&inject_paths, &path) {
-            let last = path.last().expect("At least one segment in path");
-            if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
-                &last.arguments
-            {
-                let ty = args
-                    .first()
-                    .expect("Type checker should ensure that Inject always has one argument");
-                let err_message = format!("Type was not registered to on your application");
-                /* TODO: This needs a better error message.
-                 * Also don't crash the program just return a proper error
-                 */
-                quote! {
-                    Inject::new(__dependancy_injection.get::<#ty>().expect(#err_message))
+    let fn_arg_tokens_result = fn_args_result
+        .unwrap()
+        .into_iter()
+        .map(|(arg_name, path)| {
+            if match_path(&option_paths, &path) {
+                let name = arg_name.to_string();
+                Ok(quote! {
+                    __query_params.get(#name).map(|n| String::from(*n))
+                })
+            } else if match_path(&context_paths, &path) {
+                Ok(quote!(__context))
+            } else if match_path(&inject_paths, &path) {
+                let last = path.last().expect("At least one segment in path");
+                if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                    args, ..
+                }) = &last.arguments
+                {
+                    let ty = args
+                        .first()
+                        .expect("Type checker should ensure that Inject always has one argument");
+
+                    let err_message = format!("Type was not registered to on your application");
+                    /* TODO: This needs a better error message. */
+                    Ok(quote! {
+                        Inject::new(__dependancy_injection.get::<#ty>().expect(#err_message))
+                    })
+                } else {
+                    Err(compile_error("Inject was called without generic arguments"))
                 }
             } else {
-                panic!("Inject was called without generic arguments");
+                let tmp = quote! {
+                    String::from(__route_params[#route_index])
+                };
+                route_index += 1;
+                Ok(tmp)
             }
-        } else {
-            let tmp = quote! {
-                String::from(__route_params[#route_index])
-            };
-            route_index += 1;
-            tmp
-        }
-    });
+        })
+        .collect::<Result<Vec<_>, _>>();
+
+    if let Err(e) = fn_arg_tokens_result {
+        return TokenStream::from(e);
+    }
+
+    let fn_arg_tokens = fn_arg_tokens_result.unwrap();
 
     let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = path {
         parse_route(lit.value()).expect("Invalid route")
@@ -104,10 +114,10 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
             __query_params: ::std::collections::HashMap<&str, &str>,
             __context: ::buzz::types::BuzzContext,
             __dependancy_injection: &::buzz::types::dev::DependancyInjection,
-        ) -> ::buzz::types::HttpResponse {
-            #name(
+        ) -> Result<::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError> {
+            Ok(#name(
                 #(#fn_arg_tokens,)*
-            ).respond()
+            ).respond())
         }
 
         #[allow(non_upper_case_globals)]

@@ -1,4 +1,4 @@
-use buzz_types::{*, dev::DependancyInjection};
+use buzz_types::{dev::DependancyInjection, errors::BuzzError, *};
 use std::collections::HashMap;
 
 pub struct Routes {
@@ -10,7 +10,11 @@ impl Routes {
         Self { routes: Vec::new() }
     }
 
-    pub fn match_route_params(&self, request: HttpRequest, di: &DependancyInjection) -> Option<HttpResponse> {
+    pub fn match_route_params(
+        &self,
+        request: HttpRequest,
+        di: &DependancyInjection,
+    ) -> Result<HttpResponse, BuzzError> {
         let query_seperator = request.path.chars().position(|c| c == '?');
         let route_path = &request.path[0..(query_seperator.unwrap_or(request.path.len()))];
         let segments: Vec<_> = route_path.split("/").filter(|p| !p.is_empty()).collect();
@@ -22,26 +26,29 @@ impl Routes {
         };
 
         let candidates = route_tree_filter(&segments, &self.routes, request.method);
-        let (handler, route) = find_most_specific(&candidates)?;
-        let flat = unsafe_flatten(&route);
+        if let Some((handler, route)) = find_most_specific(&candidates) {
+            let flat = unsafe_flatten(&route);
 
-        let vars = flat
-            .iter()
-            .zip(segments)
-            .filter_map(|(ty, val)| {
-                if let SegmentType::Variable(_) = ty {
-                    Some(val)
-                } else {
-                    None
-                }
-            })
-            .collect();
+            let vars = flat
+                .iter()
+                .zip(segments)
+                .filter_map(|(ty, val)| {
+                    if let SegmentType::Variable(_) = ty {
+                        Some(val)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
 
-        let context = BuzzContext {
-            headers: request.headers,
-        };
+            let context = BuzzContext {
+                headers: request.headers,
+            };
 
-        Some(handler(vars, query_params, context, di))
+            handler(vars, query_params, context, di)
+        } else {
+            Ok(HttpResponse::new(HttpStatusCode::NotFound))
+        }
     }
 
     pub fn insert(&mut self, routes: Vec<(Handler, RouteMetadata)>) {

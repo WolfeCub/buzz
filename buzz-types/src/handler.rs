@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{HttpResponse, BuzzContext, dependancy_injection::DependancyInjection};
+use crate::{
+    dependancy_injection::DependancyInjection, errors::BuzzError, BuzzContext, HttpResponse,
+};
 
 /// A wrapper around a user defined route handler.
 ///
@@ -10,4 +12,9 @@ use crate::{HttpResponse, BuzzContext, dependancy_injection::DependancyInjection
 /// a [`HashMap`] of query params, a [`BuzzContext`](crate::BuzzContext) which contains any other
 /// metadata the caller might need and a [`DependancyInjection`](crate::dev::DependancyInjection)
 /// which can be used to fetch registered types.
-pub type Handler = fn(Vec<&str>, HashMap<&str, &str>, BuzzContext, &DependancyInjection) -> HttpResponse;
+pub type Handler = fn(
+    Vec<&str>,
+    HashMap<&str, &str>,
+    BuzzContext,
+    &DependancyInjection,
+) -> Result<HttpResponse, BuzzError>;
