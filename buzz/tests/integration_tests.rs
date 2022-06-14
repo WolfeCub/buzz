@@ -1,6 +1,7 @@
 use once_cell::sync::OnceCell;
-use std::collections::HashMap;
+use std::{any::Any, collections::HashMap};
 
+use buzz::prelude;
 use buzz::prelude::*;
 use buzz_types::{HttpMethod, HttpRequest, HttpStatusCode};
 
@@ -118,6 +119,32 @@ fn inject_struct(val: Inject<TestStruct>) -> impl Respond {
     val.prop.clone()
 }
 
+#[get("/query-full-path")]
+fn query_full_path(name: std::option::Option<String>) -> impl Respond {
+    name.map(|n| format!("full-path|{n}"))
+}
+
+use std::option;
+#[get("/query-partial-path")]
+fn query_partial_path(name: option::Option<String>) -> impl Respond {
+    name.map(|n| format!("partial-path|{n}"))
+}
+
+#[get("/mixed-paths")]
+fn mixed_paths(
+    ctx: prelude::BuzzContext,
+    val: prelude::Inject<i32>,
+    val2: buzz::prelude::Inject<i32>,
+) -> impl Respond {
+    let header = ctx.headers.get("Header-Name").map(|h| String::from(h));
+    Some(format!(
+        "mixed-paths|{}|{}|{}",
+        header?,
+        val.get(),
+        val2.get()
+    ))
+}
+
 const CONTEXT: OnceCell<Buzz> = OnceCell::new();
 
 fn make_buzz() -> Buzz {
@@ -139,7 +166,10 @@ fn make_buzz() -> Buzz {
             combination_mixed,
             inject_i32,
             inject_string,
-            inject_struct
+            inject_struct,
+            query_full_path,
+            query_partial_path,
+            mixed_paths
         ))
         .register(42i32)
         .register("fourty two".to_owned())
@@ -166,6 +196,12 @@ macro_rules! request {
             headers: HashMap::from_iter([$(($key.to_owned(), $value)),*]),
         })
     };
+}
+
+#[test]
+fn trybuild() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/trybuild/*.rs");
 }
 
 #[test]
@@ -261,10 +297,7 @@ fn it_responds_to_query_single_no_params() {
 
 #[test]
 fn it_responds_to_query_single_wrong_params() {
-    let response = request!(
-        Get,
-        format!("/query-single?foo=blah&bar=some&hello=goodbye")
-    );
+    let response = request!(Get, "/query-single?foo=blah&bar=some&hello=goodbye");
 
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::NotFound);
@@ -372,4 +405,39 @@ fn it_responds_to_inject_struct() {
     assert!(response.body.is_some());
     assert_eq!(response.status_code, HttpStatusCode::Ok);
     assert_eq!(response.body.unwrap(), "fourty two");
+}
+
+proptest! {
+    #[test]
+    fn it_responds_to_query_full_path(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+        let response = request!(Get, format!("/query-full-path?name={value}"));
+
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), format!("full-path|{value}"));
+    }
+
+    #[test]
+    fn it_responds_to_query_partial_path(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+        let response = request!(Get, format!("/query-partial-path?name={value}"));
+
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), format!("partial-path|{value}"));
+    }
+
+    #[test]
+    fn it_responds_to_mixed_paths(
+        header in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
+    ) {
+
+        let response = request!(
+            Get, "/mixed-paths",
+            "Header-Name": header.clone()
+        );
+
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), format!("mixed-paths|{header}|42|42"));
+    }
 }

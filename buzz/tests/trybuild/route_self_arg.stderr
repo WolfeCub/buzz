@@ -1,0 +1,23 @@
+error: macros that expand to items must be delimited with braces or followed by a semicolon
+ --> tests/trybuild/route_self_arg.rs:3:1
+  |
+3 | #[get("/self-arg")]
+  | ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `get` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: change the delimiters to curly braces
+  |
+3 | {}
+  | ~
+help: add a semicolon
+  |
+3 | #[get("/self-arg")];
+  |                    +
+
+error: Found self in args which is not allowed
+ --> tests/trybuild/route_self_arg.rs:3:1
+  |
+3 | #[get("/self-arg")]
+  | ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `get` (in Nightly builds, run with -Z macro-backtrace for more info)
