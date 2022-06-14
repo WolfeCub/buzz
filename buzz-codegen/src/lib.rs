@@ -1,10 +1,10 @@
 use buzz_types::HttpMethod;
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use route_parser::parse_route;
 use syn::{
-    parse_macro_input, punctuated::Punctuated, token::Comma, AttributeArgs, Ident, ItemFn,
-    NestedMeta,
+    parse_macro_input, punctuated::Punctuated, token::Comma, AngleBracketedGenericArguments,
+    AttributeArgs, Ident, ItemFn, NestedMeta, PathArguments, GenericArgument,
 };
 
 mod route_parser;
@@ -23,12 +23,11 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
                     if let syn::Type::Path(type_path) = &*pat_type.ty {
                         Ok((
                             &pat_ident.ident,
-                            &type_path
+                            type_path
                                 .path
                                 .segments
                                 .last()
-                                .ok_or(compile_error("Every type has at least one segment"))?
-                                .ident,
+                                .ok_or(compile_error("Every type has at least one segment"))?,
                         ))
                     } else {
                         Err(compile_error("Type is not a path"))
@@ -51,22 +50,41 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
     let fn_arg_tokens = fn_args_result
         .unwrap()
         .into_iter()
-        .map(|(arg_name, arg_type)| match arg_type.to_string().as_str() {
-            "Option" => {
-                let name = arg_name.to_string();
-                quote! {
-                    __query_params.get(#name).map(|n| String::from(*n))
+        .map(|(arg_name, path_segment)| {
+            match (
+                path_segment.ident.to_string().as_str(),
+                &path_segment.arguments,
+            ) {
+                ("Option", _) => {
+                    let name = arg_name.to_string();
+                    quote! {
+                        __query_params.get(#name).map(|n| String::from(*n))
+                    }
                 }
-            }
-            "BuzzContext" => {
-                quote!(__context)
-            }
-            _ => {
-                let tmp = quote! {
-                    String::from(__route_params[#route_index])
-                };
-                route_index += 1;
-                tmp
+                ("BuzzContext", _) => {
+                    quote!(__context)
+                }
+                (
+                    "Inject",
+                    PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }),
+                ) => {
+                    let ty = args.first()
+                        .expect("Type checker should ensure that Inject always has one argument");
+                    let err_message = format!("Type was not registered to on your application");
+                    /* TODO: This needs a better error message.
+                     * Also don't crash the program just return a proper error
+                     */
+                    quote! {
+                        Inject::new(__dependancy_injection.get::<#ty>().expect(#err_message))
+                    }
+                }
+                _ => {
+                    let tmp = quote! {
+                        String::from(__route_params[#route_index])
+                    };
+                    route_index += 1;
+                    tmp
+                }
             }
         });
 
@@ -88,6 +106,7 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
             __route_params: Vec<&str>,
             __query_params: ::std::collections::HashMap<&str, &str>,
             __context: ::buzz::types::BuzzContext,
+            __dependancy_injection: &::buzz::types::dev::DependancyInjection,
         ) -> ::buzz::types::HttpResponse {
             #name(
                 #(#fn_arg_tokens,)*

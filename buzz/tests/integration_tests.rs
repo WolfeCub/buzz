@@ -83,33 +83,69 @@ fn combination_mixed(
     context: BuzzContext,
     query_two: Option<String>,
     route_two: String,
+    inject_i32: Inject<i32>,
 ) -> impl Respond {
     let header = context.headers.get("Header-Name").map(|h| String::from(h));
 
     Some(format!(
-        "combination-mixed|{}|{}|{}|{}|{}",
-        route_one, route_two, query_one?, query_two?, header?
+        "combination-mixed|{}|{}|{}|{}|{}|{}",
+        route_one,
+        route_two,
+        query_one?,
+        query_two?,
+        header?,
+        inject_i32.get()
     ))
 }
 
-static BUZZ: OnceCell<Buzz> = OnceCell::new();
+#[get("/inject-i32")]
+fn inject_i32(val: Inject<i32>) -> impl Respond {
+    val.get().to_string()
+}
+
+/* TODO figure out how to get rid of these clones for &String types */
+#[get("/inject-string")]
+fn inject_string(val: Inject<String>) -> impl Respond {
+    val.clone()
+}
+
+struct TestStruct {
+    prop: String,
+}
+
+#[get("/inject-struct")]
+fn inject_struct(val: Inject<TestStruct>) -> impl Respond {
+    val.prop.clone()
+}
+
+const CONTEXT: OnceCell<Buzz> = OnceCell::new();
 
 fn make_buzz() -> Buzz {
     Buzz::new("127.0.0.1:8080")
         .route(route!(simple_returns_str))
-        .route(route!(simple_returns_string))
-        .route(route!(simple_returns_option_some))
-        .route(route!(simple_returns_option_none))
-        .route(route!(simple_returns_result_ok))
-        .route(route!(simple_returns_result_err))
-        .route(route!(param_end))
-        .route(route!(param_middle))
-        .route(route!(param_beginning))
-        .route(route!(query_single))
-        .route(route!(query_many))
-        .route(route!(context_header))
-        .route(route!(combination))
-        .route(route!(combination_mixed))
+        .routes(routes!(
+            simple_returns_string,
+            simple_returns_option_some,
+            simple_returns_option_none,
+            simple_returns_result_ok,
+            simple_returns_result_err,
+            param_end,
+            param_middle,
+            param_beginning,
+            query_single,
+            query_many,
+            context_header,
+            combination,
+            combination_mixed,
+            inject_i32,
+            inject_string,
+            inject_struct
+        ))
+        .register(42i32)
+        .register("fourty two".to_owned())
+        .register(TestStruct {
+            prop: "fourty two".to_owned(),
+        })
 }
 
 macro_rules! request {
@@ -123,7 +159,7 @@ macro_rules! request {
         request!($method, $path.to_owned(), $($key: $value),*)
     };
     ($method:tt, $path:expr, $($key:literal: $value:expr),*) => {
-        BUZZ.get_or_init(make_buzz).dispatch(HttpRequest {
+        CONTEXT.get_or_init(make_buzz).dispatch(HttpRequest {
             method: HttpMethod::$method,
             path: $path,
             version: 1.1,
@@ -306,7 +342,34 @@ proptest! {
         assert!(response.body.is_some());
         assert_eq!(response.status_code, HttpStatusCode::Ok);
         assert_eq!(response.body.unwrap(), format!(
-            "combination-mixed|{route_one}|{route_two}|{query_one}|{query_two}|{header}"
+            "combination-mixed|{route_one}|{route_two}|{query_one}|{query_two}|{header}|42"
         ));
     }
+}
+
+#[test]
+fn it_responds_to_inject_i32() {
+    let response = request!(Get, "/inject-i32",);
+
+    assert!(response.body.is_some());
+    assert_eq!(response.status_code, HttpStatusCode::Ok);
+    assert_eq!(response.body.unwrap(), "42");
+}
+
+#[test]
+fn it_responds_to_inject_string() {
+    let response = request!(Get, "/inject-string",);
+
+    assert!(response.body.is_some());
+    assert_eq!(response.status_code, HttpStatusCode::Ok);
+    assert_eq!(response.body.unwrap(), "fourty two");
+}
+
+#[test]
+fn it_responds_to_inject_struct() {
+    let response = request!(Get, "/inject-struct",);
+
+    assert!(response.body.is_some());
+    assert_eq!(response.status_code, HttpStatusCode::Ok);
+    assert_eq!(response.body.unwrap(), "fourty two");
 }

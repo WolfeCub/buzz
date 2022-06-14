@@ -60,6 +60,11 @@ fn query(test: Option<String>) -> impl Respond {
     test
 }
 
+#[get("/inject")]
+fn inject(thing: Inject<i32>) -> impl Respond {
+    thing.get().to_string()
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .routes(routes!(
@@ -74,7 +79,9 @@ fn main() {
             other,
             params,
             paramsthree,
-            query
+            query,
+            inject
         ))
+        .register::<i32>(42)
         .run_server();
 }

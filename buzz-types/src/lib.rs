@@ -26,9 +26,14 @@ pub use handler::*;
 mod buzz_context;
 pub use buzz_context::*;
 
+mod inject;
+pub use inject::*;
+
+mod dependancy_injection;
 mod parser;
 
 /// Contains things are used internally by Buzz across crates that are not meant for user consuption
 pub mod dev {
     pub use super::parser::*;
+    pub use super::dependancy_injection::*;
 }
