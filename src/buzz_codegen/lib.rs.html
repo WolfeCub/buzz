@@ -190,13 +190,31 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::HttpMethod</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">ToTokens</span>};
+<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
 <span class="kw">use</span> <span class="ident">route_parser::parse_route</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::{
     <span class="ident">parse_macro_input</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">token::Comma</span>, <span class="ident">AngleBracketedGenericArguments</span>,
-    <span class="ident">AttributeArgs</span>, <span class="ident">Ident</span>, <span class="ident">ItemFn</span>, <span class="ident">NestedMeta</span>, <span class="ident">PathArguments</span>, <span class="ident">GenericArgument</span>,
+    <span class="ident">AttributeArgs</span>, <span class="ident">Ident</span>, <span class="ident">ItemFn</span>, <span class="ident">NestedMeta</span>, <span class="ident">PathArguments</span>, <span class="ident">PathSegment</span>,
 };
 
 <span class="kw">mod</span> <span class="ident">route_parser</span>;
@@ -213,14 +231,7 @@
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::FnArg::Typed</span>(<span class="ident">pat_type</span>) <span class="op">=</span> <span class="ident">arg</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::Pat::Ident</span>(<span class="ident">pat_ident</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_type</span>.<span class="ident">pat</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::Type::Path</span>(<span class="ident">type_path</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_type</span>.<span class="ident">ty</span> {
-                        <span class="prelude-val">Ok</span>((
-                            <span class="kw-2">&amp;</span><span class="ident">pat_ident</span>.<span class="ident">ident</span>,
-                            <span class="ident">type_path</span>
-                                .<span class="ident">path</span>
-                                .<span class="ident">segments</span>
-                                .<span class="ident">last</span>()
-                                .<span class="ident">ok_or</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Every type has at least one segment&quot;</span>))<span class="question-mark">?</span>,
-                        ))
+                        <span class="prelude-val">Ok</span>((<span class="kw-2">&amp;</span><span class="ident">pat_ident</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>))
                     } <span class="kw">else</span> {
                         <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Type is not a path&quot;</span>))
                     }
@@ -239,46 +250,50 @@
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">route_index</span> <span class="op">=</span> <span class="number">0usize</span>;
 
-    <span class="kw">let</span> <span class="ident">fn_arg_tokens</span> <span class="op">=</span> <span class="ident">fn_args_result</span>
-        .<span class="ident">unwrap</span>()
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">arg_name</span>, <span class="ident">path_segment</span>)<span class="op">|</span> {
-            <span class="kw">match</span> (
-                <span class="ident">path_segment</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">path_segment</span>.<span class="ident">arguments</span>,
-            ) {
-                (<span class="string">&quot;Option&quot;</span>, <span class="kw">_</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">arg_name</span>.<span class="ident">to_string</span>();
-                    <span class="macro">quote!</span> {
-                        <span class="ident">__query_params</span>.<span class="ident">get</span>(#<span class="ident">name</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="kw-2">*</span><span class="ident">n</span>))
-                    }
-                }
-                (<span class="string">&quot;BuzzContext&quot;</span>, <span class="kw">_</span>) =&gt; {
-                    <span class="macro">quote!</span>(<span class="ident">__context</span>)
-                }
-                (
-                    <span class="string">&quot;Inject&quot;</span>,
-                    <span class="ident">PathArguments::AngleBracketed</span>(<span class="ident">AngleBracketedGenericArguments</span> { <span class="ident">args</span>, .. }),
-                ) =&gt; {
-                    <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">first</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
-                    <span class="kw">let</span> <span class="ident">err_message</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;Type was not registered to on your application&quot;</span>);
-                    <span class="comment">/* TODO: This needs a better error message.
-                     * Also don&#39;t crash the program just return a proper error
-                     */</span>
-                    <span class="macro">quote!</span> {
-                        <span class="ident">Inject::new</span>(<span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>().<span class="ident">expect</span>(#<span class="ident">err_message</span>))
-                    }
-                }
-                <span class="kw">_</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="macro">quote!</span> {
-                        <span class="ident">String::from</span>(<span class="ident">__route_params</span>[#<span class="ident">route_index</span>])
-                    };
-                    <span class="ident">route_index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                    <span class="ident">tmp</span>
-                }
+    <span class="kw">let</span> <span class="ident">option_paths</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="macro">vec!</span>[<span class="string">&quot;std&quot;</span>, <span class="string">&quot;option&quot;</span>, <span class="string">&quot;Option&quot;</span>]];
+    <span class="kw">let</span> <span class="ident">context_paths</span> <span class="op">=</span> <span class="macro">vec!</span>[
+        <span class="macro">vec!</span>[<span class="string">&quot;buzz&quot;</span>, <span class="string">&quot;types&quot;</span>, <span class="string">&quot;BuzzContext&quot;</span>],
+        <span class="macro">vec!</span>[<span class="string">&quot;buzz&quot;</span>, <span class="string">&quot;prelude&quot;</span>, <span class="string">&quot;BuzzContext&quot;</span>],
+    ];
+    <span class="kw">let</span> <span class="ident">inject_paths</span> <span class="op">=</span> <span class="macro">vec!</span>[
+        <span class="macro">vec!</span>[<span class="string">&quot;buzz&quot;</span>, <span class="string">&quot;types&quot;</span>, <span class="string">&quot;Inject&quot;</span>],
+        <span class="macro">vec!</span>[<span class="string">&quot;buzz&quot;</span>, <span class="string">&quot;prelude&quot;</span>, <span class="string">&quot;Inject&quot;</span>],
+    ];
+
+    <span class="kw">let</span> <span class="ident">fn_arg_tokens</span> <span class="op">=</span> <span class="ident">fn_args_result</span>.<span class="ident">unwrap</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">arg_name</span>, <span class="ident">path</span>)<span class="op">|</span> {
+        <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">option_paths</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
+            <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">arg_name</span>.<span class="ident">to_string</span>();
+            <span class="macro">quote!</span> {
+                <span class="ident">__query_params</span>.<span class="ident">get</span>(#<span class="ident">name</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="kw-2">*</span><span class="ident">n</span>))
             }
-        });
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">context_paths</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
+            <span class="macro">quote!</span>(<span class="ident">__context</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">inject_paths</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
+            <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">last</span>().<span class="ident">expect</span>(<span class="string">&quot;At least one segment in path&quot;</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">PathArguments::AngleBracketed</span>(<span class="ident">AngleBracketedGenericArguments</span> { <span class="ident">args</span>, .. }) <span class="op">=</span>
+                <span class="kw-2">&amp;</span><span class="ident">last</span>.<span class="ident">arguments</span>
+            {
+                <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">args</span>
+                    .<span class="ident">first</span>()
+                    .<span class="ident">expect</span>(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
+                <span class="kw">let</span> <span class="ident">err_message</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;Type was not registered to on your application&quot;</span>);
+                <span class="comment">/* TODO: This needs a better error message.
+                 * Also don&#39;t crash the program just return a proper error
+                 */</span>
+                <span class="macro">quote!</span> {
+                    <span class="ident">Inject::new</span>(<span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>().<span class="ident">expect</span>(#<span class="ident">err_message</span>))
+                }
+            } <span class="kw">else</span> {
+                <span class="macro">panic!</span>(<span class="string">&quot;Inject was called without generic arguments&quot;</span>);
+            }
+        } <span class="kw">else</span> {
+            <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="macro">quote!</span> {
+                <span class="ident">String::from</span>(<span class="ident">__route_params</span>[#<span class="ident">route_index</span>])
+            };
+            <span class="ident">route_index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="ident">tmp</span>
+        }
+    });
 
     <span class="kw">let</span> <span class="ident">user_route</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Lit</span>(<span class="ident">syn::Lit::Str</span>(<span class="ident">lit</span>)) <span class="op">=</span> <span class="ident">path</span> {
         <span class="ident">parse_route</span>(<span class="ident">lit</span>.<span class="ident">value</span>()).<span class="ident">expect</span>(<span class="string">&quot;Invalid route&quot;</span>)
@@ -376,6 +391,27 @@
 
 <span class="kw">fn</span> <span class="ident">make_metedata_name</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>) -&gt; <span class="ident">Ident</span> {
     <span class="macro">format_ident!</span>(<span class="string">&quot;buzz_metadata_{}&quot;</span>, <span class="ident">name</span>)
+}
+
+<span class="kw">fn</span> <span class="ident">match_path</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">valid_paths</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">matching</span>: <span class="kw-2">&amp;</span><span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">PathSegment</span>, <span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">helper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">actual</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">matching</span>: <span class="kw-2">&amp;</span><span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">PathSegment</span>, <span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">for</span> <span class="ident">seg</span> <span class="kw">in</span> <span class="ident">matching</span> {
+            <span class="kw">loop</span> {
+                <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">actual</span>.<span class="ident">len</span>() {
+                    <span class="kw">return</span> <span class="bool-val">false</span>;
+                }
+                <span class="kw">if</span> <span class="ident">actual</span>[<span class="ident">i</span>] <span class="op">==</span> <span class="ident">seg</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>() {
+                    <span class="kw">break</span>;
+                }
+                <span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            }
+        }
+
+        <span class="bool-val">true</span>
+    }
+
+    <span class="ident">valid_paths</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">path</span><span class="op">|</span> <span class="ident">helper</span>(<span class="ident">path</span>, <span class="ident">matching</span>))
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_codegen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
