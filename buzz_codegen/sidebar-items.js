@@ -1,1 +1,1 @@
-initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"macro":[["route",""],["routes",""]]});
+initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"macro":[["routes",""]]});
