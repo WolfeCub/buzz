@@ -149,8 +149,8 @@ const CONTEXT: OnceCell<Buzz> = OnceCell::new();
 
 fn make_buzz() -> Buzz {
     Buzz::new("127.0.0.1:8080")
-        .route(route!(simple_returns_str))
         .routes(routes!(
+            simple_returns_str,
             simple_returns_string,
             simple_returns_option_some,
             simple_returns_option_none,

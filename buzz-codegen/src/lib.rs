@@ -131,20 +131,6 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
 }
 
 #[proc_macro]
-pub fn route(input: TokenStream) -> TokenStream {
-    let id = parse_macro_input!(input as Ident);
-
-    let wrapper_name = make_wrapper_name(&id);
-    let metadata_name = make_metedata_name(&id);
-
-    let expanded = quote! {
-        (#wrapper_name, #metadata_name)
-    };
-
-    TokenStream::from(expanded)
-}
-
-#[proc_macro]
 pub fn routes(input: TokenStream) -> TokenStream {
     let identifiers = parse_macro_input!(input with Punctuated::<Ident, Comma>::parse_terminated);
 

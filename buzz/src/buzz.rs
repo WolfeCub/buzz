@@ -23,17 +23,17 @@ impl Buzz {
         }
     }
 
-    pub fn register<T: 'static>(mut self, injectable: T) -> Self {
-        self.di.register(injectable);
+    pub fn routes(mut self, routes: Vec<(Handler, RouteMetadata)>) -> Self {
+        self.routes.insert(routes);
         self
     }
 
-    pub fn route(self, route: (Handler, RouteMetadata)) -> Self {
-        self.routes(vec![route])
+    pub fn router(self, fun: fn(Self) -> Self) -> Self {
+        fun(self)
     }
 
-    pub fn routes(mut self, routes: Vec<(Handler, RouteMetadata)>) -> Self {
-        self.routes.insert(routes);
+    pub fn register<T: 'static>(mut self, injectable: T) -> Self {
+        self.di.register(injectable);
         self
     }
 

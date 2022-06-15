@@ -1,5 +1,7 @@
 use buzz::prelude::*;
 
+mod other;
+
 #[get("/foo")]
 fn foo() -> impl Respond {
     "foo"
@@ -82,6 +84,7 @@ fn main() {
             query,
             inject
         ))
+        .router(other::router)
         .register::<i32>(42)
         .run_server();
 }
