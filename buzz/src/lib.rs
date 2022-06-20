@@ -65,6 +65,7 @@ fn main() {
 */
 
 mod http_parse;
+mod json_parse;
 mod buzz;
 mod routes;
 
