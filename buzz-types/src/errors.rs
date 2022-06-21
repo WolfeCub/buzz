@@ -30,6 +30,8 @@ pub enum RouteParseError {
 pub enum BuzzError {
     #[error("Use of unregistered type: `{0}`")]
     UseOfUnregesteredInject(String),
+    #[error("Json parsing error: {0}")]
+    JsonParseError(#[from] Box<dyn std::error::Error>),
 }
 
 #[derive(Error, Debug)]

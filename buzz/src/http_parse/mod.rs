@@ -19,11 +19,14 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
         headers.insert(key.to_owned(), val.to_owned());
     }
 
+    let body = parser.substr(parser.offset(), parser.data.len()).to_owned();
+
     Ok(HttpRequest {
         method,
         path,
         version,
         headers,
+        body,
     })
 }
 
