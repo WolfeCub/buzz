@@ -60,7 +60,7 @@ proptest! {
         assert!(result.is_ok());
 
         let version = result.unwrap();
-        assert_eq!(version, test_version.parse().unwrap());
+        assert_eq!(version, test_version.parse::<f64>().unwrap());
         assert_eq!(parser.offset(), parser.data.len());
     }
 

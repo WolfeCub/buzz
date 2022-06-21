@@ -81,8 +81,12 @@ impl<'a> Parser<'a> {
         self.subbytes(starting, self.offset.get())
     }
 
-
     pub fn remaining(&self) -> usize {
         self.data.len() - self.offset.get()
+    }
+
+    pub fn rewind(&self, n: usize) {
+        let offset = self.offset.get();
+        self.offset.set(offset - n);
     }
 }

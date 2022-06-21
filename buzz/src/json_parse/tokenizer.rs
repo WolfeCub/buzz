@@ -1,12 +1,11 @@
-use buzz_types::dev::Parser;
+use buzz_types::{dev::Parser, errors::JsonParseError};
 
-#[derive(Debug)]
-pub (crate) enum JsonTok {
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum JsonTok {
     OpenCurly,
     CloseCurly,
     OpenSquare,
     CloseSquare,
-    Quote,
     Comma,
     Colon,
     String(String),
@@ -14,39 +13,45 @@ pub (crate) enum JsonTok {
     Bool(bool),
 }
 
-pub (crate) fn tokenize(input: &str) -> Vec<JsonTok> {
-    let mut result = Vec::new();
-
-    let parser = Parser::new(input.as_bytes());
-
-    while let Some(c) = parser.take() {
-        match c {
-            b' ' => None,
-            b'\t' => None,
-            b'\n' => None,
-            b'\r' => None,
-
-            b'{' => Some(JsonTok::OpenCurly),
-            b'}' => Some(JsonTok::CloseCurly),
-            b'[' => Some(JsonTok::OpenSquare),
-            b']' => Some(JsonTok::CloseSquare),
-            b'"' => Some(JsonTok::Quote),
-            b',' => Some(JsonTok::Comma),
-            b':' => Some(JsonTok::Colon),
-            b'0'..=b'9' => Some(JsonTok::Number(read_num(&parser))),
-            _ => {
-                let bool_val = try_read_bool(&parser);
-                if bool_val.is_some() {
-                    bool_val
-                } else {
-                    Some(JsonTok::String(read_token(&parser)))
-                }
-            }
+impl JsonTok {
+    pub(crate) fn tokenize<'a>(input: &'a str) -> JsonTokIter<'a> {
+        JsonTokIter {
+            parser: Parser::new(input.as_bytes()),
         }
-        .map(|tok| result.push(tok));
     }
+}
 
-    result
+pub(crate) struct JsonTokIter<'a> {
+    parser: Parser<'a>,
+}
+
+impl<'a> Iterator for JsonTokIter<'a> {
+    type Item = Result<JsonTok, JsonParseError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.parser.remaining() <= 0 {
+                return None;
+            }
+
+            return Some(match self.parser.take().unwrap() {
+                b' ' => continue,
+                b'\t' => continue,
+                b'\n' => continue,
+                b'\r' => continue,
+                b'{' => Ok(JsonTok::OpenCurly),
+                b'}' => Ok(JsonTok::CloseCurly),
+                b'[' => Ok(JsonTok::OpenSquare),
+                b']' => Ok(JsonTok::CloseSquare),
+                b',' => Ok(JsonTok::Comma),
+                b':' => Ok(JsonTok::Colon),
+                b'"' => Ok(JsonTok::String(read_token(&self.parser))),
+                b'0'..=b'9' | b'-' => Ok(JsonTok::Number(read_num(&self.parser))),
+                thing => try_read_bool(&self.parser)
+                    .ok_or(JsonParseError::UnexpectedToken((thing as char).to_string())),
+            });
+        }
+    }
 }
 
 fn try_read_bool(parser: &Parser) -> Option<JsonTok> {
@@ -69,22 +74,21 @@ fn read_num(parser: &Parser) -> i64 {
     parser.substr_to_offset(start).parse().unwrap()
 }
 
+/* TODO: This is failable */
 fn read_token(parser: &Parser) -> String {
     let start = parser.offset() - 1;
     let mut hit_escape = false;
 
     while let Some(c) = parser.take() {
         match c {
-            b'\\' => {
+            b'\\' if !hit_escape => {
                 hit_escape = true;
-                continue;
             }
-            b'"' if hit_escape == false => break,
+            b'"' if !hit_escape => break,
             _ => {
                 hit_escape = false;
             }
         }
     }
-
-    parser.substr(start, parser.offset() - 1).to_owned()
+    parser.substr(start + 1, parser.offset() - 1).to_owned()
 }

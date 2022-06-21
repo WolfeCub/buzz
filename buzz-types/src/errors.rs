@@ -31,3 +31,17 @@ pub enum BuzzError {
     #[error("Use of unregistered type: `{0}`")]
     UseOfUnregesteredInject(String),
 }
+
+#[derive(Error, Debug)]
+pub enum JsonParseError {
+    #[error("Unexpected token '{0}")]
+    UnexpectedToken(String),
+    #[error("End of input while {0}")]
+    EndOfInputWhile(String),
+    #[error("Expected comma but none was found")]
+    ExpectedComma,
+    #[error("Expected colon but none was found")]
+    ExpectedColon,
+    #[error("Invalid object key found '{0}' expected string")]
+    InvalidObjectKey(String),
+}
