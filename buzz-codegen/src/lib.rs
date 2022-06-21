@@ -4,13 +4,38 @@ use quote::{format_ident, quote};
 use route_parser::parse_route;
 use syn::{
     parse_macro_input, punctuated::Punctuated, token::Comma, AngleBracketedGenericArguments,
-    AttributeArgs, Ident, ItemFn, NestedMeta, PathArguments, PathSegment,
+    AttributeArgs, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, PathSegment,
 };
 
 mod route_parser;
 
 /* TODO: Type match and true to auto ".into()" */
-fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> TokenStream {
+fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr_args = parse_macro_input!(attr as AttributeArgs);
+
+    let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = &attr_args[0] {
+        parse_route(lit.value()).expect("Invalid route")
+    } else {
+        return compile_error("Argument must be a string literal");
+    };
+
+    /* TODO: Handle this nesting */
+    let body_attr = attr_args[1..].iter().find_map(|arg| {
+        if let NestedMeta::Meta(Meta::NameValue(name_value)) = &attr_args[1] {
+            if let Lit::Str(lit_str) = &name_value.lit {
+                if "body" == name_value.path.segments.last().unwrap().ident.to_string() {
+                    Some(lit_str.value())
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    });
+
     let input = parse_macro_input!(item as ItemFn);
 
     let fn_args_result = input
@@ -54,7 +79,11 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
         .unwrap()
         .into_iter()
         .map(|(arg_name, path)| {
-            if match_path(&option_paths, &path) {
+            if body_attr.is_some() && *body_attr.as_ref().unwrap() == arg_name.to_string() {
+                Ok(quote! {
+                    <#path as buzz::types::traits::FromBody>::from_body(&__body)?
+                })
+            } else if match_path(&option_paths, &path) {
                 let name = arg_name.to_string();
                 Ok(quote! {
                     __query_params.get(#name).map(|n| String::from(*n))
@@ -95,12 +124,6 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
 
     let fn_arg_tokens = fn_arg_tokens_result.unwrap();
 
-    let user_route = if let NestedMeta::Lit(syn::Lit::Str(lit)) = path {
-        parse_route(lit.value()).expect("Invalid route")
-    } else {
-        return compile_error("Argument must be a string literal");
-    };
-
     let enum_name = format_ident!("{}", format!("{:#?}", method));
     let name = &input.sig.ident;
     let wrapper_name = make_wrapper_name(name);
@@ -112,6 +135,7 @@ fn create_wrapper(method: HttpMethod, path: &NestedMeta, item: TokenStream) -> T
         fn #wrapper_name(
             __route_params: Vec<&str>,
             __query_params: ::std::collections::HashMap<&str, &str>,
+            __body: String,
             __context: ::buzz::types::BuzzContext,
             __dependancy_injection: &::buzz::types::dev::DependancyInjection,
         ) -> Result<::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError> {
@@ -152,10 +176,7 @@ macro_rules! generate_wrapper_macro {
     ($name:ident, $enum_method:tt) => {
         #[proc_macro_attribute]
         pub fn $name(attr: TokenStream, item: TokenStream) -> TokenStream {
-            let args = parse_macro_input!(attr as AttributeArgs);
-            let path = &args[0];
-
-            create_wrapper(HttpMethod::$enum_method, path, item)
+            create_wrapper(HttpMethod::$enum_method, attr, item)
         }
     };
 }

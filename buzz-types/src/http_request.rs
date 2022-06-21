@@ -9,5 +9,6 @@ pub struct HttpRequest {
     pub path: String,
     pub version: f64,
     pub headers: HashMap<String, String>,
+    pub body: String,
 }
 

@@ -194,6 +194,7 @@ macro_rules! request {
             path: $path,
             version: 1.1,
             headers: HashMap::from_iter([$(($key.to_owned(), $value)),*]),
+            body: String::new(),
         })
     };
 }

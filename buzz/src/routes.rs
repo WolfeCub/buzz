@@ -45,7 +45,7 @@ impl Routes {
                 headers: request.headers,
             };
 
-            handler(vars, query_params, context, di)
+            handler(vars, query_params, request.body, context, di)
         } else {
             Ok(HttpResponse::new(HttpStatusCode::NotFound))
         }
