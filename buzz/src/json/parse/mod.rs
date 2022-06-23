@@ -1,28 +1,15 @@
 use std::iter::Peekable;
 
-mod tokenizer;
-use buzz_types::{errors::JsonParseError, traits::FromBody};
+use buzz_types::errors::JsonParseError;
 
+mod tokenizer;
 use self::tokenizer::*;
+
+mod json_value;
+pub use json_value::*;
 
 #[cfg(test)]
 mod tests;
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum JsonValue {
-    Number(i64),
-    Bool(bool),
-    String(String),
-    Array(Vec<JsonValue>),
-    Object(Vec<(String, JsonValue)>),
-}
-
-impl JsonValue {
-    pub fn parse(input: &str) -> Result<JsonValue, JsonParseError> {
-        let tokens = JsonTok::tokenize(input);
-        parse_expr(&mut tokens.peekable())
-    }
-}
 
 impl ToString for JsonValue {
     fn to_string(&self) -> String {
