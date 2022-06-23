@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use buzz_types::*;
 use buzz_types::dev::*;
 use buzz_types::errors::HttpParseError;
+use buzz_types::*;
 
 #[cfg(test)]
 mod tests;
@@ -19,7 +19,21 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
         headers.insert(key.to_owned(), val.to_owned());
     }
 
-    let body = parser.substr(parser.offset(), parser.data.len()).to_owned();
+    if Some(b'\n') != parser.take() {
+        return Err(HttpParseError::MissingNewlineAfterHeaders);
+    }
+
+    let body = headers.get("Content-Length").and_then(|val| {
+        if let Ok(num) = val.parse::<usize>() {
+            Some(
+                parser
+                    .substr(parser.offset(), parser.offset() + num)
+                    .to_owned(),
+            )
+        } else {
+            None
+        }
+    });
 
     Ok(HttpRequest {
         method,
@@ -119,9 +133,7 @@ fn parse_http_version<'a>(parser: &Parser<'a>) -> Result<f64, HttpParseError> {
         .map_err(HttpParseError::VersionParse)?)
 }
 
-fn parse_http_header<'a>(
-    parser: &Parser<'a>,
-) -> Result<Option<(String, String)>, HttpParseError> {
+fn parse_http_header<'a>(parser: &Parser<'a>) -> Result<Option<(String, String)>, HttpParseError> {
     let starting_pos = parser.offset();
     let mut found_colon = false;
 
@@ -184,5 +196,3 @@ fn eat_newline<'a>(parser: &Parser<'a>) -> bool {
 
     return network_newline.is_some() && network_newline.unwrap() == b"\r\n";
 }
-
-
