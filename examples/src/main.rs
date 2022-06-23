@@ -1,4 +1,4 @@
-use buzz::prelude::*;
+use buzz::{prelude::*, json::Json};
 
 mod other;
 
@@ -67,6 +67,17 @@ fn inject(thing: Inject<i32>) -> impl Respond {
     thing.get().to_string()
 }
 
+#[derive(Deserialize)]
+struct Thing {
+    foo: String,
+    bar: i64,
+}
+
+#[post("/json", body = "request_body")]
+fn json(request_body: Json<Thing>) -> impl Respond {
+    request_body.foo.clone()
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .routes(routes!(
@@ -82,7 +93,8 @@ fn main() {
             params,
             paramsthree,
             query,
-            inject
+            inject,
+            json
         ))
         .router(other::router)
         .register::<i32>(42)

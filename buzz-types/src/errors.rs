@@ -47,3 +47,9 @@ pub enum JsonParseError {
     #[error("Invalid object key found '{0}' expected string")]
     InvalidObjectKey(String),
 }
+
+#[derive(Error, Debug)]
+pub enum DeserializationError {
+    #[error("Mismatch types. Expected `{0}` got `{1}` ")]
+    MismatchedTypes(String, String),
+}
