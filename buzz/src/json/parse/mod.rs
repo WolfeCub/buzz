@@ -9,35 +9,35 @@ use self::tokenizer::*;
 mod tests;
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum Json {
+pub enum JsonValue {
     Number(i64),
     Bool(bool),
     String(String),
-    Array(Vec<Json>),
-    Object(Vec<(String, Json)>),
+    Array(Vec<JsonValue>),
+    Object(Vec<(String, JsonValue)>),
 }
 
-impl Json {
-    pub fn parse(input: &str) -> Result<Json, JsonParseError> {
+impl JsonValue {
+    pub fn parse(input: &str) -> Result<JsonValue, JsonParseError> {
         let tokens = JsonTok::tokenize(input);
         parse_expr(&mut tokens.peekable())
     }
 }
 
-impl ToString for Json {
+impl ToString for JsonValue {
     fn to_string(&self) -> String {
         match self {
-            Json::Number(num) => num.to_string(),
-            Json::Bool(boolean) => boolean.to_string(),
-            Json::String(string) => format!(r#""{}""#, string),
-            Json::Array(arr) => format!(
+            JsonValue::Number(num) => num.to_string(),
+            JsonValue::Bool(boolean) => boolean.to_string(),
+            JsonValue::String(string) => format!(r#""{}""#, string),
+            JsonValue::Array(arr) => format!(
                 "[{}]",
                 arr.iter()
                     .map(|elem| elem.to_string())
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            Json::Object(arr) => format!(
+            JsonValue::Object(arr) => format!(
                 "{{{}}}",
                 arr.iter()
                     .map(|(k, v)| format!(r#""{}": {}"#, k, v.to_string()))
@@ -48,13 +48,7 @@ impl ToString for Json {
     }
 }
 
-impl FromBody for Json {
-    fn from_body(body: &str) -> Result<Self, Box<dyn std::error::Error>> {
-        Ok(Json::parse(body)?)
-    }
-}
-
-fn parse_expr(tokens: &mut Peekable<JsonTokIter>) -> Result<Json, JsonParseError> {
+fn parse_expr(tokens: &mut Peekable<JsonTokIter>) -> Result<JsonValue, JsonParseError> {
     fn make_err<T>(string: &str) -> Result<T, JsonParseError> {
         Err(JsonParseError::UnexpectedToken(string.to_owned()))
     }
@@ -65,15 +59,15 @@ fn parse_expr(tokens: &mut Peekable<JsonTokIter>) -> Result<Json, JsonParseError
         JsonTok::CloseSquare => make_err("]"),
         JsonTok::CloseCurly => make_err("}"),
 
-        JsonTok::String(s) => Ok(Json::String(s)),
-        JsonTok::Number(n) => Ok(Json::Number(n)),
-        JsonTok::Bool(b) => Ok(Json::Bool(b)),
+        JsonTok::String(s) => Ok(JsonValue::String(s)),
+        JsonTok::Number(n) => Ok(JsonValue::Number(n)),
+        JsonTok::Bool(b) => Ok(JsonValue::Bool(b)),
         JsonTok::OpenSquare => parse_array(tokens),
         JsonTok::OpenCurly => parse_object(tokens),
     }
 }
 
-fn parse_array(tokens: &mut Peekable<JsonTokIter>) -> Result<Json, JsonParseError> {
+fn parse_array(tokens: &mut Peekable<JsonTokIter>) -> Result<JsonValue, JsonParseError> {
     let mut result = Vec::new();
     let mut comma_expected = false;
 
@@ -114,10 +108,10 @@ fn parse_array(tokens: &mut Peekable<JsonTokIter>) -> Result<Json, JsonParseErro
         comma_expected = true;
     }
 
-    Ok(Json::Array(result))
+    Ok(JsonValue::Array(result))
 }
 
-fn parse_object(tokens: &mut Peekable<JsonTokIter>) -> Result<Json, JsonParseError> {
+fn parse_object(tokens: &mut Peekable<JsonTokIter>) -> Result<JsonValue, JsonParseError> {
     let mut result = Vec::new();
     let mut comma_expected = false;
 
@@ -159,5 +153,5 @@ fn parse_object(tokens: &mut Peekable<JsonTokIter>) -> Result<Json, JsonParseErr
         }
     }
 
-    Ok(Json::Object(result))
+    Ok(JsonValue::Object(result))
 }

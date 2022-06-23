@@ -67,10 +67,9 @@ fn main() {
 mod http_parse;
 mod buzz;
 mod routes;
-pub mod json_parse;
+pub mod json;
 
 pub use buzz_types as types;
-pub use json_parse as json;
 
 pub mod prelude {
     pub use super::buzz::Buzz;

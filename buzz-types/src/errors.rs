@@ -4,18 +4,16 @@ use thiserror::Error;
 pub enum HttpParseError {
     #[error("HttpParseError Method: `{0}`")]
     Method(String),
-
     #[error("HttpParseError Path: `{0}`")]
     Path(String),
-
     #[error("HttpParseError Version: `{0}`")]
     VersionText(String),
-
     #[error("HttpParseError Version: `{0}`")]
     VersionParse(#[from] std::num::ParseFloatError),
-
     #[error("HttpParseError Header: `{0}`")]
     Header(String),
+    #[error("HttpParseError: Missing newline after headers")]
+    MissingNewlineAfterHeaders,
 }
 
 
@@ -32,6 +30,8 @@ pub enum BuzzError {
     UseOfUnregesteredInject(String),
     #[error("Json parsing error: {0}")]
     JsonParseError(#[from] Box<dyn std::error::Error>),
+    #[error("Malformed request: `{0}`")]
+    MalformedRequest(String),
 }
 
 #[derive(Error, Debug)]
