@@ -2,7 +2,7 @@
 A rust web framework that avoids dependancies wherever possible.
 
 ```no_run
-use buzz::prelude::*;
+use buzz::{prelude::*, json::Json};
 
 // &str behaves as expected
 #[get("/foo")]
@@ -53,10 +53,26 @@ fn inject(val: Inject<i32>) -> impl Respond {
     val.get().to_string()
 }
 
+// Here we derive deserialize for `Task` allowing us to map json or other
+// data types to it
+#[derive(Deserialize)]
+struct Task {
+    index: i64,
+    content: String,
+}
+
+// We tell buzz which request param to inject the body for
+// It knows to deserialize the incoming request as JSON because we
+// wrapped our variable in the `Json` type
+#[post("/json", body = "request_body")]
+fn json(request_body: Json<Task>) -> impl Respond {
+    format!("{}. {}", request_body.index, request_body.content)
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         // Here we register all our routes
-        .routes(routes!(foo, it, empty, other, params, query, context))
+        .routes(routes!(foo, it, empty, other, params, query, context, json))
         // Here we register a type that can be injected
         .register::<i32>(42)
         .run_server();
