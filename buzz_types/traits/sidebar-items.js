@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Respond",""]]});
+initSidebarItems({"trait":[["Deserialize",""],["FromBody",""],["Respond",""]]});

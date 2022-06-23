@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["BuzzError",""],["HttpParseError",""],["RouteParseError",""]]});
+initSidebarItems({"enum":[["BuzzError",""],["DeserializationError",""],["HttpParseError",""],["JsonParseError",""],["RouteParseError",""]]});

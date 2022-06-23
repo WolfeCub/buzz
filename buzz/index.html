@@ -4,9 +4,9 @@
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"><a href="#">Crate buzz</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></div></ul><section><div class="block"><ul><li><a href="#modules">Modules</a></li></ul></div></section><div id="sidebar-vars" data-name="buzz" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../buzz/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">buzz</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/buzz/lib.rs.html#1-78">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A rust web framework that avoids dependancies wherever possible.</p>
+    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">buzz</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/buzz/lib.rs.html#1-95">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A rust web framework that avoids dependancies wherever possible.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">buzz::prelude</span>::<span class="kw-2">*</span>;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">buzz</span>::{<span class="ident">prelude</span>::<span class="kw-2">*</span>, <span class="ident">json::Json</span>};
 
 <span class="comment">// &amp;str behaves as expected</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/foo&quot;</span>)]</span>
@@ -57,15 +57,31 @@
     <span class="ident">val</span>.<span class="ident">get</span>().<span class="ident">to_string</span>()
 }
 
+<span class="comment">// Here we derive deserialize for `Task` allowing us to map json or other</span>
+<span class="comment">// data types to it</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Task</span> {
+    <span class="ident">index</span>: <span class="ident">i64</span>,
+    <span class="ident">content</span>: <span class="ident">String</span>,
+}
+
+<span class="comment">// We tell buzz which request param to inject the body for</span>
+<span class="comment">// It knows to deserialize the incoming request as JSON because we</span>
+<span class="comment">// wrapped our variable in the `Json` type</span>
+<span class="attribute">#[<span class="ident">post</span>(<span class="string">&quot;/json&quot;</span>, <span class="ident">body</span> <span class="op">=</span> <span class="string">&quot;request_body&quot;</span>)]</span>
+<span class="kw">fn</span> <span class="ident">json</span>(<span class="ident">request_body</span>: <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">Task</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
+    <span class="macro">format!</span>(<span class="string">&quot;{}. {}&quot;</span>, <span class="ident">request_body</span>.<span class="ident">index</span>, <span class="ident">request_body</span>.<span class="ident">content</span>)
+}
+
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="ident">Buzz::new</span>(<span class="string">&quot;127.0.0.1:8080&quot;</span>)
         <span class="comment">// Here we register all our routes</span>
-        .<span class="ident">routes</span>(<span class="macro">routes!</span>(<span class="ident">foo</span>, <span class="ident">it</span>, <span class="ident">empty</span>, <span class="ident">other</span>, <span class="ident">params</span>, <span class="ident">query</span>, <span class="ident">context</span>))
+        .<span class="ident">routes</span>(<span class="macro">routes!</span>(<span class="ident">foo</span>, <span class="ident">it</span>, <span class="ident">empty</span>, <span class="ident">other</span>, <span class="ident">params</span>, <span class="ident">query</span>, <span class="ident">context</span>, <span class="ident">json</span>))
         <span class="comment">// Here we register a type that can be injected</span>
         .<span class="ident">register</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>(<span class="number">42</span>)
         .<span class="ident">run_server</span>();
 }</code></pre></div>
 </div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="../buzz_types/index.html" title="mod buzz_types">buzz_types</a> as types;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2>
-<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="buzz::prelude mod">prelude</a></div><div class="item-right docblock-short"></div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="json/index.html" title="buzz::json mod">json</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="buzz::prelude mod">prelude</a></div><div class="item-right docblock-short"></div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
 </body></html>

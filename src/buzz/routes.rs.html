@@ -244,7 +244,7 @@
                 <span class="ident">headers</span>: <span class="ident">request</span>.<span class="ident">headers</span>,
             };
 
-            <span class="ident">handler</span>(<span class="ident">vars</span>, <span class="ident">query_params</span>, <span class="ident">context</span>, <span class="ident">di</span>)
+            <span class="ident">handler</span>(<span class="ident">vars</span>, <span class="ident">query_params</span>, <span class="ident">request</span>.<span class="ident">body</span>, <span class="ident">context</span>, <span class="ident">di</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::NotFound</span>))
         }
