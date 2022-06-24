@@ -14,10 +14,11 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
     let path = parse_http_path(&parser)?;
     let version = parse_http_version(&parser)?;
 
-    let mut headers: HashMap<String, String> = HashMap::new();
+    let mut headers_vec: Vec<(&str, &str)> = Vec::new();
     while let Some((key, val)) = parse_http_header(&parser)? {
-        headers.insert(key.to_owned(), val.to_owned());
+        headers_vec.push((key, val));
     }
+    let headers = HashMap::from_iter(headers_vec);
 
     if Some(b'\n') != parser.take() {
         return Err(HttpParseError::MissingNewlineAfterHeaders);
@@ -25,11 +26,7 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
 
     let body = headers.get("Content-Length").and_then(|val| {
         if let Ok(num) = val.parse::<usize>() {
-            Some(
-                parser
-                    .substr(parser.offset(), parser.offset() + num)
-                    .to_owned(),
-            )
+            Some(parser.substr(parser.offset(), parser.offset() + num))
         } else {
             None
         }
@@ -75,7 +72,7 @@ fn parse_http_method<'a>(parser: &Parser<'a>) -> Result<HttpMethod, HttpParseErr
     Ok(method)
 }
 
-fn parse_http_path<'a>(parser: &Parser<'a>) -> Result<String, HttpParseError> {
+fn parse_http_path<'a>(parser: &Parser<'a>) -> Result<&'a str, HttpParseError> {
     let starting_pos = parser.offset();
 
     while let Some(c) = parser.take() {
@@ -90,7 +87,7 @@ fn parse_http_path<'a>(parser: &Parser<'a>) -> Result<String, HttpParseError> {
         ));
     }
 
-    Ok(parser.substr(starting_pos, parser.offset() - 1).to_owned())
+    Ok(parser.substr(starting_pos, parser.offset() - 1))
 }
 
 fn parse_http_version<'a>(parser: &Parser<'a>) -> Result<f64, HttpParseError> {
@@ -133,7 +130,9 @@ fn parse_http_version<'a>(parser: &Parser<'a>) -> Result<f64, HttpParseError> {
         .map_err(HttpParseError::VersionParse)?)
 }
 
-fn parse_http_header<'a>(parser: &Parser<'a>) -> Result<Option<(String, String)>, HttpParseError> {
+fn parse_http_header<'a>(
+    parser: &Parser<'a>,
+) -> Result<Option<(&'a str, &'a str)>, HttpParseError> {
     let starting_pos = parser.offset();
     let mut found_colon = false;
 
@@ -170,7 +169,7 @@ fn parse_http_header<'a>(parser: &Parser<'a>) -> Result<Option<(String, String)>
         ));
     }
 
-    let key = parser.substr(starting_pos, parser.offset() - 1).to_owned();
+    let key = parser.substr(starting_pos, parser.offset() - 1);
     let value_pos = parser.offset();
 
     parser.consume_while(|c| c != b'\r');
@@ -184,10 +183,7 @@ fn parse_http_header<'a>(parser: &Parser<'a>) -> Result<Option<(String, String)>
     /* TODO: Not sure how efficient trim is */
     Ok(Some((
         key,
-        parser
-            .substr(value_pos, parser.offset() - 1)
-            .trim()
-            .to_owned(),
+        parser.substr(value_pos, parser.offset() - 1).trim(),
     )))
 }
 

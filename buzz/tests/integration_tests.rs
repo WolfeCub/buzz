@@ -146,7 +146,7 @@ proptest! {
     fn it_responds_to_context_with_header(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
         let response = request!(
             Get, "/context-header",
-            "Header-Name": value.clone()
+            "Header-Name": value
         );
 
         assert!(response.body.is_some());
@@ -162,7 +162,7 @@ proptest! {
     ) {
         let response = request!(
             Get, format!("/combination/{route}?optional={query}"),
-            "Header-Name": header.clone()
+            "Header-Name": header
         );
 
         assert!(response.body.is_some());
@@ -181,7 +181,7 @@ proptest! {
 
         let response = request!(
             Get, format!("/combination-mixed/{route_one}/{route_two}?query_one={query_one}&query_two={query_two}"),
-            "Header-Name": header.clone()
+            "Header-Name": header
         );
 
         assert!(response.body.is_some());
@@ -194,7 +194,7 @@ proptest! {
 
 #[test]
 fn it_responds_to_inject_i32() {
-    let response = request!(Get, "/inject-i32",);
+    let response = request!(Get, "/inject-i32");
 
     assert!(response.body.is_some());
     assert_eq!(response.status_code, HttpStatusCode::Ok);
@@ -203,7 +203,7 @@ fn it_responds_to_inject_i32() {
 
 #[test]
 fn it_responds_to_inject_string() {
-    let response = request!(Get, "/inject-string",);
+    let response = request!(Get, "/inject-string");
 
     assert!(response.body.is_some());
     assert_eq!(response.status_code, HttpStatusCode::Ok);
@@ -212,7 +212,7 @@ fn it_responds_to_inject_string() {
 
 #[test]
 fn it_responds_to_inject_struct() {
-    let response = request!(Get, "/inject-struct",);
+    let response = request!(Get, "/inject-struct");
 
     assert!(response.body.is_some());
     assert_eq!(response.status_code, HttpStatusCode::Ok);
@@ -280,7 +280,7 @@ proptest! {
 
         let response = request!(
             Post, "/json-struct",
-            thing
+            body: &thing
         );
 
         assert!(response.body.is_some());

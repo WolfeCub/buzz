@@ -65,19 +65,19 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn substr_to_offset(&self, starting: usize) -> &str {
+    pub fn substr_to_offset(&self, starting: usize) -> &'a str {
         self.substr(starting, self.offset.get())
     }
 
-    pub fn substr(&self, starting: usize, ending: usize) -> &str {
+    pub fn substr(&self, starting: usize, ending: usize) -> &'a str {
         unsafe { std::str::from_utf8_unchecked(&self.data[starting..ending]) }
     }
 
-    pub fn subbytes(&self, starting: usize, ending: usize) -> &[u8] {
+    pub fn subbytes(&self, starting: usize, ending: usize) -> &'a [u8] {
         &self.data[starting..ending]
     }
 
-    pub fn subbytes_to_offset(&self, starting: usize) -> &[u8] {
+    pub fn subbytes_to_offset(&self, starting: usize) -> &'a [u8] {
         self.subbytes(starting, self.offset.get())
     }
 

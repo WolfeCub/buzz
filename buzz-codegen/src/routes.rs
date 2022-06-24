@@ -140,7 +140,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
         fn #wrapper_name(
             __route_params: Vec<&str>,
             __query_params: ::std::collections::HashMap<&str, &str>,
-            __body: Option<String>,
+            __body: Option<&str>,
             __context: ::buzz::types::BuzzContext,
             __dependancy_injection: &::buzz::types::dev::DependancyInjection,
         ) -> Result<::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError> {

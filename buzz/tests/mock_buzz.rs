@@ -68,7 +68,7 @@ fn context_header(context: BuzzContext) -> impl Respond {
 
 #[get("/combination/{route}")]
 fn combination(context: BuzzContext, route: String, optional: Option<String>) -> impl Respond {
-    let header = context.headers.get("Header-Name").map(|h| String::from(h));
+    let header = context.headers.get("Header-Name");
 
     Some(format!("combination|{}|{}|{}", route, optional?, header?))
 }
@@ -82,7 +82,7 @@ fn combination_mixed(
     route_two: String,
     inject_i32: Inject<i32>,
 ) -> impl Respond {
-    let header = context.headers.get("Header-Name").map(|h| String::from(h));
+    let header = context.headers.get("Header-Name");
 
     Some(format!(
         "combination-mixed|{}|{}|{}|{}|{}|{}",
@@ -132,7 +132,7 @@ fn mixed_paths(
     val: prelude::Inject<i32>,
     val2: buzz::prelude::Inject<i32>,
 ) -> impl Respond {
-    let header = ctx.headers.get("Header-Name").map(|h| String::from(h));
+    let header = ctx.headers.get("Header-Name");
     Some(format!(
         "mixed-paths|{}|{}|{}",
         header?,

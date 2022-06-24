@@ -47,7 +47,7 @@ fn query(arg: Option<String>) -> impl Respond {
 // BuzzContext can be injected anywhere and get extra info about the request
 #[get("/context")]
 fn context(context: BuzzContext) -> impl Respond {
-    context.headers.get("Some-Header").map(String::from)
+    context.headers.get("Some-Header").map(|h| (*h).to_owned())
 }
 
 // Registered params can be injected anywhere with the special type Inject
