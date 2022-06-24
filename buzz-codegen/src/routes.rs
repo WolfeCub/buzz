@@ -1,6 +1,6 @@
 use buzz_types::HttpMethod;
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use syn::{
     parse_macro_input, AngleBracketedGenericArguments, AttributeArgs, ItemFn, Lit, Meta,
     NestedMeta, PathArguments,
@@ -104,10 +104,11 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                         .first()
                         .expect("Type checker should ensure that Inject always has one argument");
 
-                    let err_message = format!("Type was not registered to on your application");
-                    /* TODO: This needs a better error message. */
+                    let ty_string = ty.to_token_stream().to_string();
                     Ok(quote! {
-                        Inject::new(__dependancy_injection.get::<#ty>().expect(#err_message))
+                        Inject::new(__dependancy_injection.get::<#ty>().ok_or(
+                            ::buzz::types::errors::BuzzError::UseOfUnregesteredInject(#ty_string.to_owned())
+                        )?)
                     })
                 } else {
                     Err(compile_error("Inject was called without generic arguments"))
