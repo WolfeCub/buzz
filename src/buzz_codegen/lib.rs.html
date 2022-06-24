@@ -106,6 +106,17 @@
 <span id="101">101</span>
 <span id="102">102</span>
 <span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::HttpMethod</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
 <span class="kw">use</span> <span class="ident">quote::quote</span>;
@@ -170,7 +181,9 @@
             };
 
             <span class="kw">let</span> <span class="ident">names</span> <span class="op">=</span> <span class="ident">idents</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">ident</span><span class="op">|</span> <span class="ident">ident</span>.<span class="ident">to_string</span>());
+            <span class="kw">let</span> <span class="ident">key_count</span> <span class="op">=</span> <span class="ident">names</span>.<span class="ident">len</span>();
 
+            <span class="comment">/* TODO: Allow `Option`s to be left off and default to `None` */</span>
             <span class="macro">quote!</span> {
                 <span class="kw">impl</span> <span class="ident">::buzz::types::traits::Deserialize</span><span class="op">&lt;</span><span class="ident">::buzz::json::JsonValue</span><span class="op">&gt;</span> <span class="kw">for</span> #<span class="ident">name</span> {
                     <span class="kw">fn</span> <span class="ident">deserialize</span>(<span class="ident">value</span>: <span class="ident">::buzz::json::JsonValue</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>#<span class="ident">name</span>, <span class="ident">::buzz::types::errors::DeserializationError</span><span class="op">&gt;</span> {
@@ -180,6 +193,7 @@
                         <span class="kw">unsafe</span> {
                             <span class="kw">match</span> <span class="ident">value</span> {
                                 <span class="ident">::buzz::json::JsonValue::Object</span>(<span class="ident">pairs</span>) =&gt; {
+                                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
                                     <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">pairs</span> {
                                         <span class="kw">match</span> <span class="ident">k</span>.<span class="ident">as_str</span>() {
                                             #(#<span class="ident">names</span> =&gt; {
@@ -189,6 +203,14 @@
                                             },)<span class="op">*</span>
                                             <span class="kw">_</span> =&gt; {},
                                         }
+                                        <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                                    }
+
+                                    <span class="comment">/* TODO: Be more specific about what keys are missing */</span>
+                                    <span class="kw">if</span> #<span class="ident">key_count</span> <span class="op">!</span><span class="op">=</span> <span class="ident">count</span> {
+                                        <span class="kw">return</span> <span class="prelude-val">Err</span>(
+                                            <span class="ident">::buzz::types::errors::DeserializationError::MissingValues</span>(#<span class="ident">key_count</span>, <span class="ident">count</span>)
+                                        );
                                     }
 
                                 },
