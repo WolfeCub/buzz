@@ -162,9 +162,10 @@
 <span id="157">157</span>
 <span id="158">158</span>
 <span id="159">159</span>
+<span id="160">160</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::HttpMethod</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>};
+<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">ToTokens</span>};
 <span class="kw">use</span> <span class="ident">syn</span>::{
     <span class="ident">parse_macro_input</span>, <span class="ident">AngleBracketedGenericArguments</span>, <span class="ident">AttributeArgs</span>, <span class="ident">ItemFn</span>, <span class="ident">Lit</span>, <span class="ident">Meta</span>,
     <span class="ident">NestedMeta</span>, <span class="ident">PathArguments</span>,
@@ -268,10 +269,11 @@
                         .<span class="ident">first</span>()
                         .<span class="ident">expect</span>(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
 
-                    <span class="kw">let</span> <span class="ident">err_message</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;Type was not registered to on your application&quot;</span>);
-                    <span class="comment">/* TODO: This needs a better error message. */</span>
+                    <span class="kw">let</span> <span class="ident">ty_string</span> <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">to_token_stream</span>().<span class="ident">to_string</span>();
                     <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-                        <span class="ident">Inject::new</span>(<span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>().<span class="ident">expect</span>(#<span class="ident">err_message</span>))
+                        <span class="ident">Inject::new</span>(<span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>().<span class="ident">ok_or</span>(
+                            <span class="ident">::buzz::types::errors::BuzzError::UseOfUnregesteredInject</span>(#<span class="ident">ty_string</span>.<span class="ident">to_owned</span>())
+                        )<span class="question-mark">?</span>)
                     })
                 } <span class="kw">else</span> {
                     <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Inject was called without generic arguments&quot;</span>))
