@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -46,10 +48,18 @@ pub enum JsonParseError {
     ExpectedColon,
     #[error("Invalid object key found '{0}' expected string")]
     InvalidObjectKey(String),
+    #[error("Numbers may only contain one '.'")]
+    DuplicateDecimals,
+    #[error("{0}")]
+    NumberParseError(#[source] <i64 as FromStr>::Err),
+    #[error("{0}")]
+    FractionalParseError(#[source] <f64 as FromStr>::Err),
 }
 
 #[derive(Error, Debug)]
 pub enum DeserializationError {
     #[error("Mismatch types. Expected `{0}` got `{1}` ")]
     MismatchedTypes(String, String),
+    #[error("Expected {0} keys but found {1}")]
+    MissingValues(usize, usize),
 }

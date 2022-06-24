@@ -260,6 +260,7 @@ proptest! {
         boolean: bool,
         vector in valid_str_vec(),
         string2 in valid_str(),
+        option_some in valid_str(),
     ) {
         let v = vector
             .iter()
@@ -274,8 +275,10 @@ proptest! {
             "vector": [{}],
             "structure": {{
                 "string2": "{}"
-            }}
-        }}"#, num_i64, string, boolean, v, string2);
+            }},
+            "option_some": "{}",
+            "option_none": null
+        }}"#, num_i64, string, boolean, v, string2, option_some);
 
 
         let response = request!(
@@ -287,12 +290,13 @@ proptest! {
         assert_eq!(response.status_code, HttpStatusCode::Ok);
         assert_eq!(
             response.body.unwrap(),
-            format!("json-struct|{}|{}|{}|{}|{}",
+            format!("json-struct|{}|{}|{}|{}|{}|{}|true",
                     num_i64,
                     string,
                     boolean,
                     vector.join(","),
-                    string2)
+                    string2,
+                    option_some)
         );
 
     }

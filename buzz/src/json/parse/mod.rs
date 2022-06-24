@@ -14,7 +14,9 @@ mod tests;
 impl ToString for JsonValue {
     fn to_string(&self) -> String {
         match self {
+            JsonValue::Null => "null".to_owned(),
             JsonValue::Number(num) => num.to_string(),
+            JsonValue::Fraction(num) => num.to_string(),
             JsonValue::Bool(boolean) => boolean.to_string(),
             JsonValue::String(string) => format!(r#""{}""#, string),
             JsonValue::Array(arr) => format!(
@@ -48,7 +50,9 @@ fn parse_expr(tokens: &mut Peekable<JsonTokIter>) -> Result<JsonValue, JsonParse
 
         JsonTok::String(s) => Ok(JsonValue::String(s)),
         JsonTok::Number(n) => Ok(JsonValue::Number(n)),
+        JsonTok::Fractional(f) => Ok(JsonValue::Fraction(f)),
         JsonTok::Bool(b) => Ok(JsonValue::Bool(b)),
+        JsonTok::Null => Ok(JsonValue::Null),
         JsonTok::OpenSquare => parse_array(tokens),
         JsonTok::OpenCurly => parse_object(tokens),
     }

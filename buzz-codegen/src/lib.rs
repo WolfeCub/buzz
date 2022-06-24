@@ -62,7 +62,9 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
             };
 
             let names = idents.iter().map(|ident| ident.to_string());
+            let key_count = names.len();
 
+            /* TODO: Allow `Option`s to be left off and default to `None` */
             quote! {
                 impl ::buzz::types::traits::Deserialize<::buzz::json::JsonValue> for #name {
                     fn deserialize(value: ::buzz::json::JsonValue) -> Result<#name, ::buzz::types::errors::DeserializationError> {
@@ -72,6 +74,7 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
                         unsafe {
                             match value {
                                 ::buzz::json::JsonValue::Object(pairs) => {
+                                    let mut count = 0;
                                     for (k, v) in pairs {
                                         match k.as_str() {
                                             #(#names => {
@@ -81,6 +84,14 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
                                             },)*
                                             _ => {},
                                         }
+                                        count += 1;
+                                    }
+
+                                    /* TODO: Be more specific about what keys are missing */
+                                    if #key_count != count {
+                                        return Err(
+                                            ::buzz::types::errors::DeserializationError::MissingValues(#key_count, count)
+                                        );
                                     }
 
                                 },

@@ -1,6 +1,6 @@
 use buzz_types::{dev::Parser, errors::JsonParseError};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum JsonTok {
     OpenCurly,
     CloseCurly,
@@ -10,7 +10,9 @@ pub(crate) enum JsonTok {
     Colon,
     String(String),
     Number(i64),
+    Fractional(f64),
     Bool(bool),
+    Null,
 }
 
 impl JsonTok {
@@ -46,20 +48,31 @@ impl<'a> Iterator for JsonTokIter<'a> {
                 b',' => Ok(JsonTok::Comma),
                 b':' => Ok(JsonTok::Colon),
                 b'"' => Ok(JsonTok::String(read_token(&self.parser))),
-                b'0'..=b'9' | b'-' => Ok(JsonTok::Number(read_num(&self.parser))),
+                b'0'..=b'9' | b'-' => read_num(&self.parser),
                 thing => try_read_bool(&self.parser)
+                    .or(try_read_null(&self.parser))
                     .ok_or(JsonParseError::UnexpectedToken((thing as char).to_string())),
             });
         }
     }
 }
 
+fn try_read_null(parser: &Parser) -> Option<JsonTok> {
+    let off = parser.offset();
+    if parser.remaining() >= 3 && b"null" == parser.subbytes(off - 1, off + 3) {
+        parser.consume(3);
+        Some(JsonTok::Null)
+    } else {
+        None
+    }
+}
+
 fn try_read_bool(parser: &Parser) -> Option<JsonTok> {
     let off = parser.offset();
-    if b"true" == parser.subbytes(off - 1, off + 3) {
+    if parser.remaining() >= 3 && b"true" == parser.subbytes(off - 1, off + 3) {
         parser.consume(3);
         Some(JsonTok::Bool(true))
-    } else if b"false" == parser.subbytes(off - 1, off + 4) {
+    } else if parser.remaining() >= 4 && b"false" == parser.subbytes(off - 1, off + 4) {
         parser.consume(4);
         Some(JsonTok::Bool(false))
     } else {
@@ -67,11 +80,46 @@ fn try_read_bool(parser: &Parser) -> Option<JsonTok> {
     }
 }
 
-fn read_num(parser: &Parser) -> i64 {
+fn read_num(parser: &Parser) -> Result<JsonTok, JsonParseError> {
     let start = parser.offset() - 1;
-    parser.consume_while(|c| c.is_ascii_digit());
 
-    parser.substr_to_offset(start).parse().unwrap()
+    let mut is_fractional = false;
+    let mut is_eof = true;
+    while let Some(c) = parser.take() {
+        if c.is_ascii_digit() {
+            continue;
+        }
+
+        if c == b'.' {
+            if is_fractional {
+                return Err(JsonParseError::DuplicateDecimals);
+            }
+            is_fractional = true;
+            continue;
+        }
+
+        is_eof = false;
+        break;
+    }
+
+    if !is_eof {
+        parser.rewind(1);
+    }
+
+    let candidate = parser.substr_to_offset(start);
+    Ok(if is_fractional {
+        JsonTok::Fractional(
+            candidate
+                .parse()
+                .map_err(|e| JsonParseError::FractionalParseError(e))?,
+        )
+    } else {
+        JsonTok::Number(
+            candidate
+                .parse()
+                .map_err(|e| JsonParseError::NumberParseError(e))?,
+        )
+    })
 }
 
 /* TODO: This is failable */

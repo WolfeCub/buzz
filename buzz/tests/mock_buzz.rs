@@ -148,6 +148,8 @@ struct JsonTestStruct {
     boolean: bool,
     vector: Vec<String>,
     structure: NestedJsonTestStruct,
+    option_some: Option<String>,
+    option_none: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -158,12 +160,14 @@ struct NestedJsonTestStruct {
 #[post("/json-struct", body = "b")]
 fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
     format!(
-        "json-struct|{}|{}|{}|{}|{}",
+        "json-struct|{}|{}|{}|{}|{}|{}|{}",
         b.num_i64,
         b.string,
         b.boolean,
         b.vector.join(","),
-        b.structure.string2
+        b.structure.string2,
+        b.option_some.as_ref().unwrap(),
+        b.option_none.as_ref().is_none().to_string(),
     )
 }
 

@@ -5,9 +5,11 @@ use buzz_types::{
 
 use super::*;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum JsonValue {
+    Null,
     Number(i64),
+    Fraction(f64),
     Bool(bool),
     String(String),
     Array(Vec<JsonValue>),
@@ -18,6 +20,15 @@ impl JsonValue {
     pub fn parse(input: &str) -> Result<JsonValue, JsonParseError> {
         let tokens = JsonTok::tokenize(input);
         parse_expr(&mut tokens.peekable())
+    }
+}
+
+impl<T: Deserialize<JsonValue>> Deserialize<JsonValue> for Option<T> {
+    fn deserialize(val: JsonValue) -> Result<Self, DeserializationError> {
+        match val {
+            JsonValue::Null => Ok(None),
+            otherwise => Ok(Some(T::deserialize(otherwise)?))
+        }
     }
 }
 
