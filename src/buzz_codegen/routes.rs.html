@@ -305,7 +305,7 @@
         <span class="kw">fn</span> #<span class="ident">wrapper_name</span>(
             <span class="ident">__route_params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
             <span class="ident">__query_params</span>: <span class="ident">::std::collections::HashMap</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-            <span class="ident">__body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+            <span class="ident">__body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
             <span class="ident">__context</span>: <span class="ident">::buzz::types::BuzzContext</span>,
             <span class="ident">__dependancy_injection</span>: <span class="kw-2">&amp;</span><span class="ident">::buzz::types::dev::DependancyInjection</span>,
         ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">::buzz::types::HttpResponse</span>, <span class="ident">::buzz::types::errors::BuzzError</span><span class="op">&gt;</span> {
