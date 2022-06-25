@@ -98,84 +98,143 @@
 <span id="93">93</span>
 <span id="94">94</span>
 <span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
 </pre><pre class="rust"><code><span class="doccomment">/*!
 A rust web framework that avoids dependancies wherever possible.
 
+Here we return a [`&amp;str`] and it behaves as expected. We can register a route by using
+the [`routes`](crate::buzz::Buzz::routes) method and the [`routes!`](crate::codegen::routes) macro.
 ```no_run
-use buzz::{prelude::*, json::Json};
-
-// &amp;str behaves as expected
+# use buzz::prelude::*;
 #[get(&quot;/foo&quot;)]
 fn foo() -&gt; impl Respond {
     &quot;foo&quot;
 }
 
-// Some varients work as long as the inside implements Respond
+fn main() {
+    Buzz::new(&quot;127.0.0.1:8080&quot;)
+        .routes(routes!(foo))
+        .run_server();
+}
+```
+
+[`Option`] variants work as long as the inner element implements [`Respond`](crate::types::traits::Respond).
+```no_run
+# use buzz::prelude::*;
 #[get(&quot;/it&quot;)]
 fn it() -&gt; impl Respond {
     Some(&quot;it&quot;)
 }
+```
 
-// Returning None gives you a 404
+Returning `None` gives you a 404.
+```no_run
+# use buzz::prelude::*;
 #[get(&quot;/empty&quot;)]
 fn empty() -&gt; impl Respond {
     Option::&lt;()&gt;::None
 }
+```
 
-// Returning an Err gives you a 500 with the corresponding Err content
+Returning an the `Err` variant of [`Result`] gives you a 500 with the content `Err`.
+```no_run
+# use buzz::prelude::*;
 #[get(&quot;/other&quot;)]
 fn other() -&gt; impl Respond {
     Result::&lt;(), _&gt;::Err(std::fmt::Error::default())
 }
+```
 
-// Query parameters are just regular arguments
-#[get(&quot;/params/{hello}&quot;)]
-fn params(hello: String) -&gt; impl Respond {
-    hello
+Query parameters are just regular arguments. We can specify anything that implements [`std::str::FromStr`]
+```no_run
+# use buzz::prelude::*;
+#[get(&quot;/params/{hello}/{number}&quot;)]
+fn params(hello: String, number: i32) -&gt; impl Respond {
+    format!(&quot;{hello} {number}&quot;)
 }
+```
 
-// Query params are also just args but are Optional
-// In the case of ?arg=something arg here will be Some(&quot;something&quot;)
+Query params are also just args but are [`Option`].
+In the case of `?arg=something` arg here will be `Some(&quot;something&quot;)`
+and `None` if `arg` is not present in the query string.
+```no_run
+# use buzz::prelude::*;
 #[get(&quot;/query&quot;)]
 fn query(arg: Option&lt;String&gt;) -&gt; impl Respond {
     arg
 }
+```
 
-// BuzzContext can be injected anywhere and get extra info about the request
+[`BuzzContext`](crate::types::BuzzContext) can be injected anywhere and get extra info about the request.
+Here we grab an arbitrary header to make use of.
+```no_run
+# use buzz::prelude::*;
 #[get(&quot;/context&quot;)]
 fn context(context: BuzzContext) -&gt; impl Respond {
     context.headers.get(&quot;Some-Header&quot;).map(|h| (*h).to_owned())
 }
+```
 
-// Registered params can be injected anywhere with the special type Inject
+Registered params can be injected anywhere with the special type Inject.
+```no_run
+# use buzz::prelude::*;
 #[get(&quot;/inject&quot;)]
 fn inject(val: Inject&lt;i32&gt;) -&gt; impl Respond {
     val.get().to_string()
 }
 
-// Here we derive deserialize for `Task` allowing us to map json or other
-// data types to it
+fn main() {
+    Buzz::new(&quot;127.0.0.1:8080&quot;)
+        .routes(routes!(inject))
+        // Here we register a type that can be injected
+        .register::&lt;i32&gt;(42)
+        .run_server();
+}
+```
+
+Here we derive [`Deserialize`](crate::types::traits::Deserialize) for `Task` allowing us to map json or other
+data types to it. We tell buzz which request param to inject the body for by specifying `body = &quot;arg_name&quot;`.
+Buzz knows to deserialize the incoming request as JSON since we wrapped our variable in the [`Json`](crate::json::Json) type.
+```no_run
+# use buzz::{prelude::*, json::Json};
 #[derive(Deserialize)]
 struct Task {
     index: i64,
     content: String,
 }
 
-// We tell buzz which request param to inject the body for
-// It knows to deserialize the incoming request as JSON because we
-// wrapped our variable in the `Json` type
 #[post(&quot;/json&quot;, body = &quot;request_body&quot;)]
 fn json(request_body: Json&lt;Task&gt;) -&gt; impl Respond {
     format!(&quot;{}. {}&quot;, request_body.index, request_body.content)
-}
-
-fn main() {
-    Buzz::new(&quot;127.0.0.1:8080&quot;)
-        // Here we register all our routes
-        .routes(routes!(foo, it, empty, other, params, query, context, json))
-        // Here we register a type that can be injected
-        .register::&lt;i32&gt;(42)
-        .run_server();
 }
 ```
 */</span>
@@ -186,12 +245,13 @@ fn main() {
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">json</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types</span> <span class="kw">as</span> <span class="ident">types</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_codegen</span> <span class="kw">as</span> <span class="ident">codegen</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">prelude</span> {
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::buzz::Buzz</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types::traits::Respond</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_types</span>::{<span class="ident">BuzzContext</span>, <span class="ident">Inject</span>};
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">buzz_codegen</span>::<span class="kw-2">*</span>;
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::traits::Respond</span>;
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">BuzzContext</span>, <span class="ident">Inject</span>};
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::codegen</span>::<span class="kw-2">*</span>;
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>

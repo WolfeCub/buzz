@@ -4,84 +4,88 @@
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"><a href="#">Crate buzz</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></div></ul><section><div class="block"><ul><li><a href="#modules">Modules</a></li></ul></div></section><div id="sidebar-vars" data-name="buzz" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../buzz/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">buzz</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/buzz/lib.rs.html#1-95">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A rust web framework that avoids dependancies wherever possible.</p>
+    <h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">buzz</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/buzz/lib.rs.html#1-125">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A rust web framework that avoids dependancies wherever possible.</p>
+<p>Here we return a <a href="https://doc.rust-lang.org/1.61.0/std/primitive.str.html" title="&amp;str"><code>&amp;str</code></a> and it behaves as expected. We can register a route by using
+the <a href="prelude/struct.Buzz.html#method.routes"><code>routes</code></a> method and the <a href="prelude/macro.routes.html"><code>routes!</code></a> macro.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">buzz</span>::{<span class="ident">prelude</span>::<span class="kw-2">*</span>, <span class="ident">json::Json</span>};
-
-<span class="comment">// &amp;str behaves as expected</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/foo&quot;</span>)]</span>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/foo&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">foo</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="string">&quot;foo&quot;</span>
 }
 
-<span class="comment">// Some varients work as long as the inside implements Respond</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/it&quot;</span>)]</span>
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="ident">Buzz::new</span>(<span class="string">&quot;127.0.0.1:8080&quot;</span>)
+        .<span class="ident">routes</span>(<span class="macro">routes!</span>(<span class="ident">foo</span>))
+        .<span class="ident">run_server</span>();
+}</code></pre></div>
+<p><a href="https://doc.rust-lang.org/1.61.0/core/option/enum.Option.html" title="Option"><code>Option</code></a> variants work as long as the inner element implements <a href="prelude/trait.Respond.html"><code>Respond</code></a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/it&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">it</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="prelude-val">Some</span>(<span class="string">&quot;it&quot;</span>)
-}
+}</code></pre></div>
+<p>Returning <code>None</code> gives you a 404.</p>
 
-<span class="comment">// Returning None gives you a 404</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/empty&quot;</span>)]</span>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/empty&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">empty</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="prelude-ty">Option</span>::<span class="op">&lt;</span>()<span class="op">&gt;</span><span class="ident">::None</span>
-}
+}</code></pre></div>
+<p>Returning an the <code>Err</code> variant of <a href="https://doc.rust-lang.org/1.61.0/core/result/enum.Result.html" title="Result"><code>Result</code></a> gives you a 500 with the content <code>Err</code>.</p>
 
-<span class="comment">// Returning an Err gives you a 500 with the corresponding Err content</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/other&quot;</span>)]</span>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/other&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">other</span>() -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="prelude-ty">Result</span>::<span class="op">&lt;</span>(), <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::Err</span>(<span class="ident">std::fmt::Error::default</span>())
-}
+}</code></pre></div>
+<p>Query parameters are just regular arguments. We can specify anything that implements <a href="https://doc.rust-lang.org/1.61.0/core/str/traits/trait.FromStr.html" title="std::str::FromStr"><code>std::str::FromStr</code></a></p>
 
-<span class="comment">// Query parameters are just regular arguments</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/params/{hello}&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">params</span>(<span class="ident">hello</span>: <span class="ident">String</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
-    <span class="ident">hello</span>
-}
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/params/{hello}/{number}&quot;</span>)]</span>
+<span class="kw">fn</span> <span class="ident">params</span>(<span class="ident">hello</span>: <span class="ident">String</span>, <span class="ident">number</span>: <span class="ident">i32</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
+    <span class="macro">format!</span>(<span class="string">&quot;{hello} {number}&quot;</span>)
+}</code></pre></div>
+<p>Query params are also just args but are <a href="https://doc.rust-lang.org/1.61.0/core/option/enum.Option.html" title="Option"><code>Option</code></a>.
+In the case of <code>?arg=something</code> arg here will be <code>Some(&quot;something&quot;)</code>
+and <code>None</code> if <code>arg</code> is not present in the query string.</p>
 
-<span class="comment">// Query params are also just args but are Optional</span>
-<span class="comment">// In the case of ?arg=something arg here will be Some(&quot;something&quot;)</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/query&quot;</span>)]</span>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/query&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">query</span>(<span class="ident">arg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="ident">arg</span>
-}
+}</code></pre></div>
+<p><a href="prelude/struct.BuzzContext.html"><code>BuzzContext</code></a> can be injected anywhere and get extra info about the request.
+Here we grab an arbitrary header to make use of.</p>
 
-<span class="comment">// BuzzContext can be injected anywhere and get extra info about the request</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/context&quot;</span>)]</span>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/context&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">context</span>(<span class="ident">context</span>: <span class="ident">BuzzContext</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="ident">context</span>.<span class="ident">headers</span>.<span class="ident">get</span>(<span class="string">&quot;Some-Header&quot;</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> (<span class="kw-2">*</span><span class="ident">h</span>).<span class="ident">to_owned</span>())
-}
+}</code></pre></div>
+<p>Registered params can be injected anywhere with the special type Inject.</p>
 
-<span class="comment">// Registered params can be injected anywhere with the special type Inject</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/inject&quot;</span>)]</span>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/inject&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">inject</span>(<span class="ident">val</span>: <span class="ident">Inject</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="ident">val</span>.<span class="ident">get</span>().<span class="ident">to_string</span>()
 }
 
-<span class="comment">// Here we derive deserialize for `Task` allowing us to map json or other</span>
-<span class="comment">// data types to it</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="ident">Buzz::new</span>(<span class="string">&quot;127.0.0.1:8080&quot;</span>)
+        .<span class="ident">routes</span>(<span class="macro">routes!</span>(<span class="ident">inject</span>))
+        <span class="comment">// Here we register a type that can be injected</span>
+        .<span class="ident">register</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>(<span class="number">42</span>)
+        .<span class="ident">run_server</span>();
+}</code></pre></div>
+<p>Here we derive <a href="crate::types::traits::Deserialize"><code>Deserialize</code></a> for <code>Task</code> allowing us to map json or other
+data types to it. We tell buzz which request param to inject the body for by specifying <code>body = &quot;arg_name&quot;</code>.
+Buzz knows to deserialize the incoming request as JSON since we wrapped our variable in the <a href="json/struct.Json.html"><code>Json</code></a> type.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Task</span> {
     <span class="ident">index</span>: <span class="ident">i64</span>,
     <span class="ident">content</span>: <span class="ident">String</span>,
 }
 
-<span class="comment">// We tell buzz which request param to inject the body for</span>
-<span class="comment">// It knows to deserialize the incoming request as JSON because we</span>
-<span class="comment">// wrapped our variable in the `Json` type</span>
 <span class="attribute">#[<span class="ident">post</span>(<span class="string">&quot;/json&quot;</span>, <span class="ident">body</span> <span class="op">=</span> <span class="string">&quot;request_body&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">json</span>(<span class="ident">request_body</span>: <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">Task</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Respond</span> {
     <span class="macro">format!</span>(<span class="string">&quot;{}. {}&quot;</span>, <span class="ident">request_body</span>.<span class="ident">index</span>, <span class="ident">request_body</span>.<span class="ident">content</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="ident">Buzz::new</span>(<span class="string">&quot;127.0.0.1:8080&quot;</span>)
-        <span class="comment">// Here we register all our routes</span>
-        .<span class="ident">routes</span>(<span class="macro">routes!</span>(<span class="ident">foo</span>, <span class="ident">it</span>, <span class="ident">empty</span>, <span class="ident">other</span>, <span class="ident">params</span>, <span class="ident">query</span>, <span class="ident">context</span>, <span class="ident">json</span>))
-        <span class="comment">// Here we register a type that can be injected</span>
-        .<span class="ident">register</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>(<span class="number">42</span>)
-        .<span class="ident">run_server</span>();
 }</code></pre></div>
 </div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2>
-<div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="../buzz_types/index.html" title="mod buzz_types">buzz_types</a> as types;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use buzz_types as types;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use buzz_codegen as codegen;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="json/index.html" title="buzz::json mod">json</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="buzz::prelude mod">prelude</a></div><div class="item-right docblock-short"></div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
 </body></html>
