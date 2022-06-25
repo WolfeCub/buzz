@@ -75,6 +75,8 @@
 <span id="70">70</span>
 <span id="71">71</span>
 <span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
 </pre><pre class="rust"><code><span class="doccomment">/// Holds the data that will be formatted back into an HTTP response by the server.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This type is what [`respond`](crate::traits::Respond::respond) returns and since all</span>
@@ -132,6 +134,7 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">HttpStatusCode</span> {
     <span class="prelude-val">Ok</span> <span class="op">=</span> <span class="number">200</span>,
     <span class="ident">NoContent</span> <span class="op">=</span> <span class="number">204</span>,
+    <span class="ident">BadRequest</span> <span class="op">=</span> <span class="number">400</span>,
     <span class="ident">NotFound</span> <span class="op">=</span> <span class="number">404</span>,
     <span class="ident">InternalServerError</span> <span class="op">=</span> <span class="number">500</span>,
 }
@@ -141,6 +144,7 @@
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident"><span class="self">Self</span>::Ok</span> =&gt; <span class="string">&quot;OK&quot;</span>,
             <span class="ident"><span class="self">Self</span>::NoContent</span> =&gt; <span class="string">&quot;No Content&quot;</span>,
+            <span class="ident"><span class="self">Self</span>::BadRequest</span> =&gt; <span class="string">&quot;Bad Request&quot;</span>,
             <span class="ident"><span class="self">Self</span>::NotFound</span> =&gt; <span class="string">&quot;Not Found&quot;</span>,
             <span class="ident"><span class="self">Self</span>::InternalServerError</span> =&gt; <span class="string">&quot;Internal Server Error&quot;</span>,
         }

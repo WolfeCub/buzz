@@ -103,6 +103,11 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::error::Error</span>;
 <span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::net::TcpListener</span>;
@@ -111,6 +116,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::http_parse</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::routes</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">buzz_types::dev::DependancyInjection</span>;
+<span class="kw">use</span> <span class="ident">buzz_types::errors::BuzzError</span>;
 <span class="kw">use</span> <span class="ident">buzz_types</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Buzz</span> {
@@ -169,11 +175,15 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dispatch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">request</span>: <span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span> {
-        <span class="self">self</span>.<span class="ident">routes</span>
-            .<span class="ident">match_route_params</span>(<span class="ident">request</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">di</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                <span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::InternalServerError</span>).<span class="ident">body</span>(<span class="ident">e</span>.<span class="ident">to_string</span>())
-            })
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">match_route_params</span>(<span class="ident">request</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">di</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">response</span>) =&gt; <span class="ident">response</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">BuzzError::BadRequest</span>(<span class="ident">err</span>)) =&gt; {
+                <span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::BadRequest</span>).<span class="ident">body</span>(<span class="ident">err</span>.<span class="ident">to_string</span>())
+            }
+            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
+                <span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::InternalServerError</span>).<span class="ident">body</span>(<span class="ident">err</span>.<span class="ident">to_string</span>())
+            }
+        }
     }
 }
 
