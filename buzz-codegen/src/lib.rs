@@ -104,8 +104,8 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
                 }
             }
         }
-        syn::Data::Enum(e) => quote! {
-            struct Hello;
+        syn::Data::Enum(_) => quote! {
+            return compile_error("Cannot derive for enums")
         },
         syn::Data::Union(_) => return compile_error("Cannot derive for unions"),
     };

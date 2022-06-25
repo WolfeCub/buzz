@@ -79,6 +79,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
         .unwrap()
         .into_iter()
         .map(|(arg_name, path)| {
+            let type_name = quote!(#path).to_string().replace(" ", "");
             if body_attr.is_some() && *body_attr.as_ref().unwrap() == arg_name.to_string() {
                 Ok(quote! {
                     <#path as buzz::types::traits::FromBody>::from_body(
@@ -90,7 +91,11 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
             } else if match_path(&option_paths, &path) {
                 let name = arg_name.to_string();
                 Ok(quote! {
-                    __query_params.get(#name).map(|n| String::from(*n))
+                    __query_params.get(#name).map(|param| {
+                        param.parse().map_err(|e| ::buzz::types::errors::BuzzError::BadRequest(
+                            format!("Expected type `{}` but got '{}'", #type_name, param)
+                        ))
+                    }).transpose()?
                 })
             } else if match_path(&context_paths, &path) {
                 Ok(quote!(__context))
@@ -114,7 +119,6 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                     Err(compile_error("Inject was called without generic arguments"))
                 }
             } else {
-                let type_name = path.last().expect("Type path has at least one element").ident.to_string();
                 let tmp = quote! {
                     {
                         let param = __route_params[#route_index];

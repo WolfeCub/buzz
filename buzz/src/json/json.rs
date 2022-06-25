@@ -19,7 +19,7 @@ impl<T: Deserialize<JsonValue>> FromBody for Json<T> {
 }
 
 impl<T> Json<T> {
-    fn get(&self) -> &T {
+    pub fn get(&self) -> &T {
         &self.inner
     }
 }

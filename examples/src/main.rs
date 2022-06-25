@@ -78,6 +78,11 @@ fn json(request_body: Json<Thing>) -> impl Respond {
     request_body.foo.clone()
 }
 
+#[get("/cast/{route}")]
+fn cast(route: i32, query: Option<i32>) -> impl Respond {
+    format!("{} {}", route, query.unwrap_or(0))
+}
+
 fn main() {
     Buzz::new("127.0.0.1:8080")
         .routes(routes!(
@@ -94,7 +99,8 @@ fn main() {
             paramsthree,
             query,
             inject,
-            json
+            json,
+            cast,
         ))
         .router(other::router)
         .register::<i32>(42)
