@@ -55,6 +55,7 @@ impl HttpResponse {
 pub enum HttpStatusCode {
     Ok = 200,
     NoContent = 204,
+    BadRequest = 400,
     NotFound = 404,
     InternalServerError = 500,
 }
@@ -64,6 +65,7 @@ impl ToString for HttpStatusCode {
         match self {
             Self::Ok => "OK",
             Self::NoContent => "No Content",
+            Self::BadRequest => "Bad Request",
             Self::NotFound => "Not Found",
             Self::InternalServerError => "Internal Server Error",
         }

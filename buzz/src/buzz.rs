@@ -6,6 +6,7 @@ use std::net::TcpStream;
 use crate::http_parse::*;
 use crate::routes::*;
 use buzz_types::dev::DependancyInjection;
+use buzz_types::errors::BuzzError;
 use buzz_types::*;
 
 pub struct Buzz {
@@ -64,11 +65,15 @@ impl Buzz {
     }
 
     pub fn dispatch(&self, request: HttpRequest) -> HttpResponse {
-        self.routes
-            .match_route_params(request, &self.di)
-            .unwrap_or_else(|e| {
-                HttpResponse::new(HttpStatusCode::InternalServerError).body(e.to_string())
-            })
+        match self.routes.match_route_params(request, &self.di) {
+            Ok(response) => response,
+            Err(BuzzError::BadRequest(err)) => {
+                HttpResponse::new(HttpStatusCode::BadRequest).body(err.to_string())
+            }
+            Err(err) => {
+                HttpResponse::new(HttpStatusCode::InternalServerError).body(err.to_string())
+            }
+        }
     }
 }
 

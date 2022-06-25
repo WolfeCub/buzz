@@ -9,7 +9,6 @@ use syn::{
 use crate::route_parser::parse_route;
 use crate::utils::*;
 
-/* TODO: Type match and true to auto ".into()" */
 pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) -> TokenStream {
     let attr_args = parse_macro_input!(attr as AttributeArgs);
 
@@ -75,6 +74,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
         vec!["buzz", "prelude", "Inject"],
     ];
 
+    /* TODO Also support calling `.parse()` on query params. Also write some tests for this */
     let fn_arg_tokens_result = fn_args_result
         .unwrap()
         .into_iter()
@@ -82,7 +82,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
             if body_attr.is_some() && *body_attr.as_ref().unwrap() == arg_name.to_string() {
                 Ok(quote! {
                     <#path as buzz::types::traits::FromBody>::from_body(
-                        &__body.ok_or(::buzz::types::errors::BuzzError::MalformedRequest(
+                        &__body.ok_or(::buzz::types::errors::BuzzError::BadRequest(
                             "Body was empty".to_owned()
                         ))?
                     )?
@@ -114,8 +114,14 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                     Err(compile_error("Inject was called without generic arguments"))
                 }
             } else {
+                let type_name = path.last().expect("Type path has at least one element").ident.to_string();
                 let tmp = quote! {
-                    String::from(__route_params[#route_index])
+                    {
+                        let param = __route_params[#route_index];
+                        param.parse().map_err(|e| ::buzz::types::errors::BuzzError::BadRequest(
+                            format!("Expected type `{}` but got '{}'", #type_name, param)
+                        ))?
+                    }
                 };
                 route_index += 1;
                 Ok(tmp)

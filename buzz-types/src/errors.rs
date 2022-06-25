@@ -32,8 +32,8 @@ pub enum BuzzError {
     UseOfUnregesteredInject(String),
     #[error("Json parsing error: {0}")]
     JsonParseError(#[from] Box<dyn std::error::Error>),
-    #[error("Malformed request: `{0}`")]
-    MalformedRequest(String),
+    #[error("{0}")]
+    BadRequest(String),
 }
 
 #[derive(Error, Debug)]
