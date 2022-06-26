@@ -145,6 +145,14 @@
 <span id="140">140</span>
 <span id="141">141</span>
 <span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types</span>::{<span class="ident">dev::Parser</span>, <span class="ident">errors::JsonParseError</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
@@ -194,7 +202,7 @@
                 <span class="string">b&#39;]&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">JsonTok::CloseSquare</span>),
                 <span class="string">b&#39;,&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">JsonTok::Comma</span>),
                 <span class="string">b&#39;:&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">JsonTok::Colon</span>),
-                <span class="string">b&#39;&quot;&#39;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">JsonTok::String</span>(<span class="ident">read_token</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">parser</span>))),
+                <span class="string">b&#39;&quot;&#39;</span> =&gt; <span class="ident">read_token</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">parser</span>).<span class="ident">map</span>(<span class="ident">JsonTok::String</span>),
                 <span class="string">b&#39;0&#39;</span>..<span class="op">=</span><span class="string">b&#39;9&#39;</span> <span class="op">|</span> <span class="string">b&#39;-&#39;</span> =&gt; <span class="ident">read_num</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">parser</span>),
                 <span class="ident">thing</span> =&gt; <span class="ident">try_read_bool</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">parser</span>)
                     .<span class="ident">or</span>(<span class="ident">try_read_null</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">parser</span>))
@@ -269,23 +277,31 @@
     })
 }
 
-<span class="comment">/* TODO: This is failable */</span>
-<span class="kw">fn</span> <span class="ident">read_token</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span>) -&gt; <span class="ident">String</span> {
+<span class="kw">fn</span> <span class="ident">read_token</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">JsonParseError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hit_escape</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">found_close_quote</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
         <span class="kw">match</span> <span class="ident">c</span> {
             <span class="string">b&#39;\\&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">hit_escape</span> =&gt; {
                 <span class="ident">hit_escape</span> <span class="op">=</span> <span class="bool-val">true</span>;
             }
-            <span class="string">b&#39;&quot;&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">hit_escape</span> =&gt; <span class="kw">break</span>,
+            <span class="string">b&#39;&quot;&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">hit_escape</span> =&gt; {
+                <span class="ident">found_close_quote</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="kw">break</span>;
+            }
             <span class="kw">_</span> =&gt; {
                 <span class="ident">hit_escape</span> <span class="op">=</span> <span class="bool-val">false</span>;
             }
         }
     }
-    <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">start</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>).<span class="ident">to_owned</span>()
+
+    <span class="kw">if</span> <span class="ident">found_close_quote</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">start</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>).<span class="ident">to_owned</span>())
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Err</span>(<span class="ident">JsonParseError::EndOfInputWhile</span>(<span class="string">&quot;Parsing string&quot;</span>.<span class="ident">to_owned</span>()))
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
