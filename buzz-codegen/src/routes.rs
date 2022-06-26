@@ -64,7 +64,6 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
 
     let mut route_index = 0usize;
 
-    /* TODO Also support calling `.parse()` on query params. Also write some tests for this */
     let fn_arg_tokens_result = fn_args_result
         .unwrap()
         .into_iter()
