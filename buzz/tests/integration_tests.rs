@@ -290,7 +290,7 @@ proptest! {
         assert_eq!(response.status_code, HttpStatusCode::Ok);
         assert_eq!(
             response.body.unwrap(),
-            format!("json-struct|{}|{}|{}|{}|{}|{}|true",
+            format!("json-struct|{}|{}|{}|{}|{}|{}|true|true",
                     num_i64,
                     string,
                     boolean,

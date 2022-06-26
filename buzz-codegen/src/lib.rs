@@ -1,7 +1,7 @@
 use buzz_types::HttpMethod;
 use proc_macro::TokenStream;
-use quote::quote;
-use syn::{parse_macro_input, punctuated::Punctuated, token::Comma, DeriveInput, Ident};
+use quote::{quote, format_ident};
+use syn::{parse_macro_input, punctuated::Punctuated, token::Comma, DeriveInput, Ident, Type};
 
 mod route_parser;
 mod routes;
@@ -51,20 +51,44 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
 
     let thing = match input.data {
         syn::Data::Struct(s) => {
-            let (idents, types): (Vec<_>, Vec<_>) = match &s.fields {
+            let pairs = match &s.fields {
                 syn::Fields::Named(fields_named) => fields_named
                     .named
                     .iter()
                     .filter_map(|field| Some((field.ident.as_ref()?, &field.ty)))
-                    .unzip(),
+                    .collect::<Vec<_>>(),
                 syn::Fields::Unnamed(_) => todo!(),
                 syn::Fields::Unit => todo!(),
             };
 
-            let names = idents.iter().map(|ident| ident.to_string());
-            let key_count = names.len();
+            let mut option_idents = Vec::new();
+            let mut match_cases = Vec::new();
+            let mut key_count = 0usize;
 
-            /* TODO: Allow `Option`s to be left off and default to `None` */
+            for (ident, ty) in pairs {
+                let name = ident.to_string();
+
+                let increase_count = match ty {
+                    syn::Type::Path(path) if match_path(&OPTION_PATHS, &path.path.segments) => {
+                        option_idents.push(ident);
+                        quote!()
+                    },
+                    _ => {
+                        key_count += 1;
+                        quote!(count += 1;)
+                    },
+                };
+
+                match_cases.push(quote! {
+                    #name => {
+                        ::std::ptr::addr_of_mut!((*ptr).#ident).write(
+                            <#ty as ::buzz::types::traits::Deserialize<::buzz::json::JsonValue>>::deserialize(v)?
+                        );
+                        #increase_count
+                    }
+                });
+            }
+
             quote! {
                 impl ::buzz::types::traits::Deserialize<::buzz::json::JsonValue> for #name {
                     fn deserialize(value: ::buzz::json::JsonValue) -> Result<#name, ::buzz::types::errors::DeserializationError> {
@@ -72,19 +96,18 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
                         let ptr = uninit.as_mut_ptr();
 
                         unsafe {
+                            #({
+                                ::std::ptr::addr_of_mut!((*ptr).#option_idents).write(None);
+                            })*
+
                             match value {
                                 ::buzz::json::JsonValue::Object(pairs) => {
                                     let mut count = 0;
                                     for (k, v) in pairs {
                                         match k.as_str() {
-                                            #(#names => {
-                                                ::std::ptr::addr_of_mut!((*ptr).#idents).write(
-                                                    <#types as ::buzz::types::traits::Deserialize<::buzz::json::JsonValue>>::deserialize(v)?
-                                                )
-                                            },)*
+                                            #(#match_cases,)*
                                             _ => {},
                                         }
-                                        count += 1;
                                     }
 
                                     /* TODO: Be more specific about what keys are missing */

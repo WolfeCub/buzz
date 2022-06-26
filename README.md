@@ -5,7 +5,7 @@
 A rust web framework that avoids dependancies wherever possible.
 
 Here we return a [`&str`] and it behaves as expected. We can register a route by using
-the [`routes`](https://docs.rs/buzz/latest/buzz/buzz/struct.Buzz.html) method and the `routes!` macro.
+the `routes` method and the `routes!` macro.
 ```rust
 #[get("/foo")]
 fn foo() -> impl Respond {
@@ -27,7 +27,7 @@ fn it() -> impl Respond {
 }
 ```
 
-Returning `None` gives you a 404.
+Returning [`None`](Option::None) gives you a 404.
 ```rust
 #[get("/empty")]
 fn empty() -> impl Respond {
@@ -53,7 +53,7 @@ fn params(hello: String, number: i32) -> impl Respond {
 
 Query params are also just args but are [`Option`].
 In the case of `?arg=something` arg here will be `Some("something")`
-and `None` if `arg` is not present in the query string.
+and [`None`](Option::None) if `arg` is not present in the query string.
 ```rust
 #[get("/query")]
 fn query(arg: Option<String>) -> impl Respond {
@@ -89,11 +89,13 @@ fn main() {
 Here we derive `Deserialize` for `Task` allowing us to map json or other
 data types to it. We tell buzz which request param to inject the body for by specifying `body = "arg_name"`.
 Buzz knows to deserialize the incoming request as JSON since we wrapped our variable in the `Json` type.
+[`Option`] fields can either be absent or `null`. Both will deserialize to [`None`](Option::None)
 ```rust
 #[derive(Deserialize)]
 struct Task {
     index: i64,
     content: String,
+    extra: Option<String>,
 }
 
 #[post("/json", body = "request_body")]

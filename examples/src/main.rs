@@ -1,4 +1,4 @@
-use buzz::{prelude::*, json::Json};
+use buzz::{json::Json, prelude::*};
 
 mod other;
 
@@ -69,13 +69,17 @@ fn inject(thing: Inject<i32>) -> impl Respond {
 
 #[derive(Deserialize)]
 struct Thing {
-    foo: String,
+    foo: Option<String>,
     bar: i64,
 }
 
 #[post("/json", body = "request_body")]
 fn json(request_body: Json<Thing>) -> impl Respond {
-    request_body.foo.clone()
+    format!(
+        "{} {}",
+        request_body.foo.clone().unwrap_or("None".to_owned()),
+        request_body.bar
+    )
 }
 
 #[get("/cast/{route}")]

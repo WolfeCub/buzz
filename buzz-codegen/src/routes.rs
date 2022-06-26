@@ -64,16 +64,6 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
 
     let mut route_index = 0usize;
 
-    let option_paths = vec![vec!["std", "option", "Option"]];
-    let context_paths = vec![
-        vec!["buzz", "types", "BuzzContext"],
-        vec!["buzz", "prelude", "BuzzContext"],
-    ];
-    let inject_paths = vec![
-        vec!["buzz", "types", "Inject"],
-        vec!["buzz", "prelude", "Inject"],
-    ];
-
     /* TODO Also support calling `.parse()` on query params. Also write some tests for this */
     let fn_arg_tokens_result = fn_args_result
         .unwrap()
@@ -88,7 +78,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                         ))?
                     )?
                 })
-            } else if match_path(&option_paths, &path) {
+            } else if match_path(&OPTION_PATHS, &path) {
                 let name = arg_name.to_string();
                 Ok(quote! {
                     __query_params.get(#name).map(|param| {
@@ -97,9 +87,9 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                         ))
                     }).transpose()?
                 })
-            } else if match_path(&context_paths, &path) {
+            } else if match_path(&CONTEXT_PATHS, &path) {
                 Ok(quote!(__context))
-            } else if match_path(&inject_paths, &path) {
+            } else if match_path(&INJECT_PATHS, &path) {
                 let last = path.last().expect("At least one segment in path");
                 if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                     args, ..

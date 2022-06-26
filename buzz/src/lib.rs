@@ -26,7 +26,7 @@ fn it() -> impl Respond {
 }
 ```
 
-Returning `None` gives you a 404.
+Returning [`None`](Option::None) gives you a 404.
 ```no_run
 # use buzz::prelude::*;
 #[get("/empty")]
@@ -55,7 +55,7 @@ fn params(hello: String, number: i32) -> impl Respond {
 
 Query params are also just args but are [`Option`].
 In the case of `?arg=something` arg here will be `Some("something")`
-and `None` if `arg` is not present in the query string.
+and [`None`](Option::None) if `arg` is not present in the query string.
 ```no_run
 # use buzz::prelude::*;
 #[get("/query")]
@@ -94,12 +94,14 @@ fn main() {
 Here we derive [`Deserialize`](crate::types::traits::Deserialize) for `Task` allowing us to map json or other
 data types to it. We tell buzz which request param to inject the body for by specifying `body = "arg_name"`.
 Buzz knows to deserialize the incoming request as JSON since we wrapped our variable in the [`Json`](crate::json::Json) type.
+[`Option`] fields can either be absent or `null`. Both will deserialize to [`None`](Option::None)
 ```no_run
 # use buzz::{prelude::*, json::Json};
 #[derive(Deserialize)]
 struct Task {
     index: i64,
     content: String,
+    extra: Option<String>,
 }
 
 #[post("/json", body = "request_body")]
