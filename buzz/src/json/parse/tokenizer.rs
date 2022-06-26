@@ -47,7 +47,7 @@ impl<'a> Iterator for JsonTokIter<'a> {
                 b']' => Ok(JsonTok::CloseSquare),
                 b',' => Ok(JsonTok::Comma),
                 b':' => Ok(JsonTok::Colon),
-                b'"' => Ok(JsonTok::String(read_token(&self.parser))),
+                b'"' => read_token(&self.parser).map(JsonTok::String),
                 b'0'..=b'9' | b'-' => read_num(&self.parser),
                 thing => try_read_bool(&self.parser)
                     .or(try_read_null(&self.parser))
@@ -122,21 +122,29 @@ fn read_num(parser: &Parser) -> Result<JsonTok, JsonParseError> {
     })
 }
 
-/* TODO: This is failable */
-fn read_token(parser: &Parser) -> String {
+fn read_token(parser: &Parser) -> Result<String, JsonParseError> {
     let start = parser.offset() - 1;
     let mut hit_escape = false;
+    let mut found_close_quote = false;
 
     while let Some(c) = parser.take() {
         match c {
             b'\\' if !hit_escape => {
                 hit_escape = true;
             }
-            b'"' if !hit_escape => break,
+            b'"' if !hit_escape => {
+                found_close_quote = true;
+                break;
+            }
             _ => {
                 hit_escape = false;
             }
         }
     }
-    parser.substr(start + 1, parser.offset() - 1).to_owned()
+
+    if found_close_quote {
+        Ok(parser.substr(start + 1, parser.offset() - 1).to_owned())
+    } else {
+        Err(JsonParseError::EndOfInputWhile("Parsing string".to_owned()))
+    }
 }
