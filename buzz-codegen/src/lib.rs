@@ -1,7 +1,7 @@
 use buzz_types::HttpMethod;
 use proc_macro::TokenStream;
-use quote::{quote, format_ident};
-use syn::{parse_macro_input, punctuated::Punctuated, token::Comma, DeriveInput, Ident, Type};
+use quote::quote;
+use syn::{parse_macro_input, punctuated::Punctuated, token::Comma, DeriveInput, Ident};
 
 mod route_parser;
 mod routes;

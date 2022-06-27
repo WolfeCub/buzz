@@ -12,7 +12,7 @@ fn json() -> impl Strategy<Value = JsonValue> {
         Just(JsonValue::Null),
     ];
 
-    leaf.prop_recursive(3, 5, 3, |inner| {
+    leaf.prop_recursive(3, 5, 3, |_inner| {
         prop_oneof![
             prop::collection::vec(json(), 0..3).prop_map(JsonValue::Array),
             prop::collection::vec(("[^\\\\\"]*", json()), 0..3).prop_map(JsonValue::Object),
