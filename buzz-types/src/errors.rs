@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use thiserror::Error;
 
+
 #[derive(Error, Debug)]
 pub enum HttpParseError {
     #[error("HttpParseError Method: `{0}`")]
@@ -30,10 +31,12 @@ pub enum RouteParseError {
 pub enum BuzzError {
     #[error("Use of unregistered type: `{0}`")]
     UseOfUnregesteredInject(String),
-    #[error("Json parsing error: {0}")]
-    JsonParseError(#[from] Box<dyn std::error::Error>),
+    #[error("Body parsing error: {0}")]
+    BodyParseError(#[from] Box<dyn std::error::Error>),
     #[error("{0}")]
     BadRequest(String),
+    #[error("Lock for injected type `{0}` was poisoned on `{1}`")]
+    LockAcquirePoisoned(String, String),
 }
 
 #[derive(Error, Debug)]

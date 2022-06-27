@@ -1,6 +1,10 @@
 /*!
 A rust web framework that avoids dependancies wherever possible.
 
+# Examples
+
+These examples are best viewed as cargo docs [here](https://wolfecub.github.io/buzz/).
+
 Here we return a [`&str`] and it behaves as expected. We can register a route by using
 the [`routes`](crate::buzz::Buzz::routes) method and the [`routes!`](crate::codegen::routes) macro.
 ```no_run

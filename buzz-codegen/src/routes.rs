@@ -103,13 +103,17 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                     let acquire_lock = if last.ident.to_string() == "InjectMut" {
                         quote! {
                             .write()
-                            .expect("Failed acquiring lock")
+                            .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
+                                    #ty_string.to_owned(), 
+                                    "write".to_owned()))?
                             .downcast_mut()
                         }
                     } else {
                         quote! {
                             .read()
-                            .expect("Failed acquiring lock")
+                            .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
+                                    #ty_string.to_owned(), 
+                                    "read".to_owned()))?
                             .downcast_ref()
                         }
                     };
