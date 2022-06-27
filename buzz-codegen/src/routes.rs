@@ -1,9 +1,12 @@
 use buzz_types::HttpMethod;
 use proc_macro::TokenStream;
+use quote::__private::TokenStream as TokenStream2;
 use quote::{format_ident, quote, ToTokens};
+use syn::punctuated::Punctuated;
+use syn::token::Colon2;
 use syn::{
     parse_macro_input, AngleBracketedGenericArguments, AttributeArgs, ItemFn, Lit, Meta,
-    NestedMeta, PathArguments,
+    NestedMeta, PathArguments, PathSegment,
 };
 
 use crate::route_parser::parse_route;
@@ -82,55 +85,14 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                 Ok(quote! {
                     __query_params.get(#name).map(|param| {
                         param.parse().map_err(|e| ::buzz::types::errors::BuzzError::BadRequest(
-                            format!("Expected type `{}` but got '{}'", #type_name, param)
-                        ))
+                                format!("Expected type `{}` but got '{}'", #type_name, param)
+                                ))
                     }).transpose()?
                 })
             } else if match_path(&CONTEXT_PATHS, &path) {
                 Ok(quote!(__context))
             } else if match_path(&INJECT_PATHS, &path) || match_path(&INJECTMUT_PATHS, &path) {
-                let last = path.last().expect("At least one segment in path");
-                if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                    args, ..
-                }) = &last.arguments
-                {
-                    let ty = args
-                        .first()
-                        .expect("Type checker should ensure that Inject always has one argument");
-
-                    let ty_string = ty.to_token_stream().to_string();
-
-                    let acquire_lock = if last.ident.to_string() == "InjectMut" {
-                        quote! {
-                            .write()
-                            .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
-                                    #ty_string.to_owned(), 
-                                    "write".to_owned()))?
-                            .downcast_mut()
-                        }
-                    } else {
-                        quote! {
-                            .read()
-                            .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
-                                    #ty_string.to_owned(), 
-                                    "read".to_owned()))?
-                            .downcast_ref()
-                        }
-                    };
-
-                    Ok(quote! {
-                        <#path>::new(
-                            __dependancy_injection.get::<#ty>()
-                            .ok_or(
-                                ::buzz::types::errors::BuzzError::UseOfUnregesteredInject(#ty_string.to_owned())
-                            )?
-                            #acquire_lock
-                            .unwrap()
-                        )
-                    })
-                } else {
-                    Err(compile_error("Inject was called without generic arguments"))
-                }
+                inject_handler(path)
             } else {
                 let tmp = quote! {
                     {
@@ -180,4 +142,48 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
     };
 
     TokenStream::from(expanded)
+}
+
+fn inject_handler(path: &Punctuated<PathSegment, Colon2>) -> Result<TokenStream2, TokenStream> {
+    let last = path.last().expect("At least one segment in path");
+    if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
+        &last.arguments
+    {
+        let ty = args
+            .first()
+            .expect("Type checker should ensure that Inject always has one argument");
+
+        let ty_string = ty.to_token_stream().to_string();
+
+        let acquire_lock = if last.ident.to_string() == "InjectMut" {
+            quote! {
+                .write()
+                    .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
+                            #ty_string.to_owned(),
+                            "write".to_owned()))?
+                    .downcast_mut()
+            }
+        } else {
+            quote! {
+                .read()
+                    .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
+                            #ty_string.to_owned(),
+                            "read".to_owned()))?
+                    .downcast_ref()
+            }
+        };
+
+        Ok(quote! {
+            <#path>::new(
+                __dependancy_injection.get::<#ty>()
+                .ok_or(
+                    ::buzz::types::errors::BuzzError::UseOfUnregesteredInject(#ty_string.to_owned())
+                    )?
+                #acquire_lock
+                .unwrap()
+                )
+        })
+    } else {
+        Err(compile_error("Inject was called without generic arguments"))
+    }
 }
