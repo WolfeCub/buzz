@@ -130,6 +130,13 @@
 <span id="125">125</span>
 <span id="126">126</span>
 <span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
 </pre><pre class="rust"><code><span class="doccomment">/*!
 A rust web framework that avoids dependancies wherever possible.
 
@@ -206,17 +213,24 @@ fn context(context: BuzzContext) -&gt; impl Respond {
 }
 ```
 
-Registered params can be injected anywhere with the special type Inject.
+Registered params can be injected anywhere with the special type [`Inject`](crate::prelude::Inject).
+You may also inject it mutably using [`InjectMut`](crate::prelude::InjectMut). Note that this will
+block other callers from acquiring another mutable reference until this one is released.
 ```no_run
 # use buzz::prelude::*;
 #[get(&quot;/inject&quot;)]
 fn inject(val: Inject&lt;i32&gt;) -&gt; impl Respond {
-    val.get().to_string()
+    val.to_string()
+}
+
+#[get(&quot;/inject-mut&quot;)]
+fn inject_mut(mut val: InjectMut&lt;i32&gt;) -&gt; impl Respond {
+    *val = 77;
 }
 
 fn main() {
     Buzz::new(&quot;127.0.0.1:8080&quot;)
-        .routes(routes!(inject))
+        .routes(routes!(inject, inject_mut))
         // Here we register a type that can be injected
         .register::&lt;i32&gt;(42)
         .run_server();
@@ -254,7 +268,7 @@ fn json(request_body: Json&lt;Task&gt;) -&gt; impl Respond {
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">prelude</span> {
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::buzz::Buzz</span>;
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::traits::Respond</span>;
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">BuzzContext</span>, <span class="ident">Inject</span>};
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types</span>::{<span class="ident">BuzzContext</span>, <span class="ident">Inject</span>, <span class="ident">InjectMut</span>};
     <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::codegen</span>::<span class="kw-2">*</span>;
 }
 </code></pre></div>
