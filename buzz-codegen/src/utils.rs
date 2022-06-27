@@ -11,6 +11,10 @@ pub(crate) static INJECT_PATHS: &[&[&'static str]] = &[
     &["buzz", "types", "Inject"],
     &["buzz", "prelude", "Inject"],
 ];
+pub(crate) static INJECTMUT_PATHS: &[&[&'static str]] = &[
+    &["buzz", "types", "InjectMut"],
+    &["buzz", "prelude", "InjectMut"],
+];
 
 pub(crate) fn compile_error(message: &str) -> TokenStream {
     TokenStream::from(quote!(compile_error!(#message)))

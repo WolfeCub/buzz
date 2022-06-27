@@ -74,17 +74,24 @@ fn context(context: BuzzContext) -> impl Respond {
 }
 ```
 
-Registered params can be injected anywhere with the special type Inject.
+Registered params can be injected anywhere with the special type [`Inject`](crate::prelude::Inject).
+You may also inject it mutably using [`InjectMut`](crate::prelude::InjectMut). Note that this will
+block other callers from acquiring another mutable reference until this one is released.
 ```no_run
 # use buzz::prelude::*;
 #[get("/inject")]
 fn inject(val: Inject<i32>) -> impl Respond {
-    val.get().to_string()
+    val.to_string()
+}
+
+#[get("/inject-mut")]
+fn inject_mut(mut val: InjectMut<i32>) -> impl Respond {
+    *val = 77;
 }
 
 fn main() {
     Buzz::new("127.0.0.1:8080")
-        .routes(routes!(inject))
+        .routes(routes!(inject, inject_mut))
         // Here we register a type that can be injected
         .register::<i32>(42)
         .run_server();
@@ -122,6 +129,6 @@ pub use buzz_codegen as codegen;
 pub mod prelude {
     pub use super::buzz::Buzz;
     pub use super::types::traits::Respond;
-    pub use super::types::{BuzzContext, Inject};
+    pub use super::types::{BuzzContext, Inject, InjectMut};
     pub use super::codegen::*;
 }

@@ -202,6 +202,25 @@ fn it_responds_to_inject_i32() {
 }
 
 #[test]
+fn it_changes_inject_mut_i32() {
+    let buzz = make_buzz();
+
+    let check_inject_value = |val: &str| {
+        let response = request!(buzz, Get, "/inject-i32");
+        assert!(response.body.is_some());
+        assert_eq!(response.status_code, HttpStatusCode::Ok);
+        assert_eq!(response.body.unwrap(), val);
+    };
+
+    check_inject_value("42");
+
+    let response = request!(buzz, Get, "/inject-mut-i32-change");
+    assert_eq!(response.status_code, HttpStatusCode::NoContent);
+
+    check_inject_value("77");
+}
+
+#[test]
 fn it_responds_to_inject_string() {
     let response = request!(Get, "/inject-string");
 

@@ -64,7 +64,12 @@ fn query(test: Option<String>) -> impl Respond {
 
 #[get("/inject")]
 fn inject(thing: Inject<i32>) -> impl Respond {
-    thing.get().to_string()
+    thing.to_string()
+}
+
+#[get("/inject-mut")]
+fn inject_mut(mut thing: InjectMut<i32>) -> impl Respond {
+    *thing = 77;
 }
 
 #[derive(Deserialize)]
@@ -103,6 +108,7 @@ fn main() {
             paramsthree,
             query,
             inject,
+            inject_mut,
             json,
             cast,
         ))

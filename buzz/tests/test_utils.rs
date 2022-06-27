@@ -2,6 +2,9 @@ use proptest::prelude::*;
 
 #[macro_export]
 macro_rules! request {
+    ($buzz:expr, $method:tt, $path:literal) => {
+        request!($buzz, $method, $path, , None)
+    };
     ($method:tt, $path:literal) => {
         request!($method, $path, , None)
     };
@@ -21,7 +24,10 @@ macro_rules! request {
         request!($method, $path, , Some($body))
     };
     ($method:tt, $path:expr, $($key:literal: $value:expr),*, $body:expr) => {
-        CONTEXT.get_or_init(make_buzz).dispatch(HttpRequest {
+        request!(make_buzz(), $method, $path, $($key: $value),*, $body)
+    };
+    ($buzz:expr, $method:tt, $path:expr, $($key:literal: $value:expr),*, $body:expr) => {
+        $buzz.dispatch(HttpRequest {
             method: HttpMethod::$method,
             path: &$path,
             version: 1.1,

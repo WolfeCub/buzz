@@ -70,16 +70,23 @@ fn context(context: BuzzContext) -> impl Respond {
 }
 ```
 
-Registered params can be injected anywhere with the special type Inject.
+Registered params can be injected anywhere with the special type `Inject`.
+You may also inject it mutably using `InjectMut`. Note that this will
+block other callers from acquiring another mutable reference until this one is released.
 ```rust
 #[get("/inject")]
 fn inject(val: Inject<i32>) -> impl Respond {
-    val.get().to_string()
+    val.to_string()
+}
+
+#[get("/inject-mut")]
+fn inject_mut(mut val: InjectMut<i32>) -> impl Respond {
+    *val = 77;
 }
 
 fn main() {
     Buzz::new("127.0.0.1:8080")
-        .routes(routes!(inject))
+        .routes(routes!(inject, inject_mut))
         // Here we register a type that can be injected
         .register::<i32>(42)
         .run_server();

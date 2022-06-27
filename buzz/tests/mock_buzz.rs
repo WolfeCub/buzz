@@ -1,5 +1,3 @@
-use once_cell::sync::OnceCell;
-
 use buzz::prelude::*;
 use buzz::{json::Json, prelude};
 
@@ -91,13 +89,18 @@ fn combination_mixed(
         query_one?,
         query_two?,
         header?,
-        inject_i32.get()
+        *inject_i32
     ))
 }
 
 #[get("/inject-i32")]
 fn inject_i32(val: Inject<i32>) -> impl Respond {
-    val.get().to_string()
+    val.to_string()
+}
+
+#[get("/inject-mut-i32-change")]
+fn inject_mut_i32_change(mut val: InjectMut<i32>) -> impl Respond {
+    *val = 77;
 }
 
 /* TODO figure out how to get rid of these clones for &String types */
@@ -136,8 +139,8 @@ fn mixed_paths(
     Some(format!(
         "mixed-paths|{}|{}|{}",
         header?,
-        val.get(),
-        val2.get()
+        *val,
+        *val2
     ))
 }
 
@@ -173,8 +176,6 @@ fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
     )
 }
 
-pub(crate) const CONTEXT: OnceCell<Buzz> = OnceCell::new();
-
 pub(crate) fn make_buzz() -> Buzz {
     Buzz::new("127.0.0.1:8080")
         .routes(routes!(
@@ -193,6 +194,7 @@ pub(crate) fn make_buzz() -> Buzz {
             combination,
             combination_mixed,
             inject_i32,
+            inject_mut_i32_change,
             inject_string,
             inject_struct,
             query_full_path,

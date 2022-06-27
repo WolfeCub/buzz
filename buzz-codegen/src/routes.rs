@@ -88,7 +88,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                 })
             } else if match_path(&CONTEXT_PATHS, &path) {
                 Ok(quote!(__context))
-            } else if match_path(&INJECT_PATHS, &path) {
+            } else if match_path(&INJECT_PATHS, &path) || match_path(&INJECTMUT_PATHS, &path) {
                 let last = path.last().expect("At least one segment in path");
                 if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                     args, ..
@@ -99,10 +99,30 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                         .expect("Type checker should ensure that Inject always has one argument");
 
                     let ty_string = ty.to_token_stream().to_string();
+
+                    let acquire_lock = if last.ident.to_string() == "InjectMut" {
+                        quote! {
+                            .write()
+                            .expect("Failed acquiring lock")
+                            .downcast_mut()
+                        }
+                    } else {
+                        quote! {
+                            .read()
+                            .expect("Failed acquiring lock")
+                            .downcast_ref()
+                        }
+                    };
+
                     Ok(quote! {
-                        Inject::new(__dependancy_injection.get::<#ty>().ok_or(
-                            ::buzz::types::errors::BuzzError::UseOfUnregesteredInject(#ty_string.to_owned())
-                        )?)
+                        <#path>::new(
+                            __dependancy_injection.get::<#ty>()
+                            .ok_or(
+                                ::buzz::types::errors::BuzzError::UseOfUnregesteredInject(#ty_string.to_owned())
+                            )?
+                            #acquire_lock
+                            .unwrap()
+                        )
                     })
                 } else {
                     Err(compile_error("Inject was called without generic arguments"))
