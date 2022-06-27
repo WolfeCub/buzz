@@ -58,8 +58,42 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::ops</span>::{<span class="ident">Deref</span>, <span class="ident">DerefMut</span>};
 
+<span class="doccomment">/// Wrapper that indicates a shared reference should be injected.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Multiple functions can have exclusive references to the same type.</span>
+<span class="doccomment">/// You can think of this as `&amp;T`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// #[get(&quot;/inject&quot;)]</span>
+<span class="doccomment">/// fn inject(val: Inject&lt;i32&gt;) -&gt; impl Respond {</span>
+<span class="doccomment">///     val.to_string()</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Inject</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>,
 }
@@ -84,6 +118,18 @@
     }
 }
 
+<span class="doccomment">/// Wrapper that indicates an exclusive reference should be injected.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Only one function may have a mutable reference to this value.</span>
+<span class="doccomment">/// You can think of this as `&amp;mut T`. Any calls that try to get a [`InjectMut`] will block until</span>
+<span class="doccomment">/// it&#39;s available.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// #[get(&quot;/inject-mut&quot;)]</span>
+<span class="doccomment">/// fn inject_mut(mut val: InjectMut&lt;i32&gt;) -&gt; impl Respond {</span>
+<span class="doccomment">///     *val = 77;</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">InjectMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>,
 }
