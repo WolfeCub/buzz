@@ -186,12 +186,21 @@
 <span id="181">181</span>
 <span id="182">182</span>
 <span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::HttpMethod</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
+<span class="kw">use</span> <span class="ident">quote::__private::TokenStream</span> <span class="kw">as</span> <span class="ident">TokenStream2</span>;
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">ToTokens</span>};
+<span class="kw">use</span> <span class="ident">syn::punctuated::Punctuated</span>;
+<span class="kw">use</span> <span class="ident">syn::token::Colon2</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::{
     <span class="ident">parse_macro_input</span>, <span class="ident">AngleBracketedGenericArguments</span>, <span class="ident">AttributeArgs</span>, <span class="ident">ItemFn</span>, <span class="ident">Lit</span>, <span class="ident">Meta</span>,
-    <span class="ident">NestedMeta</span>, <span class="ident">PathArguments</span>,
+    <span class="ident">NestedMeta</span>, <span class="ident">PathArguments</span>, <span class="ident">PathSegment</span>,
 };
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::route_parser::parse_route</span>;
@@ -270,55 +279,14 @@
                 <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
                     <span class="ident">__query_params</span>.<span class="ident">get</span>(#<span class="ident">name</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">param</span><span class="op">|</span> {
                         <span class="ident">param</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::BadRequest</span>(
-                            <span class="macro">format!</span>(<span class="string">&quot;Expected type `{}` but got &#39;{}&#39;&quot;</span>, #<span class="ident">type_name</span>, <span class="ident">param</span>)
-                        ))
+                                <span class="macro">format!</span>(<span class="string">&quot;Expected type `{}` but got &#39;{}&#39;&quot;</span>, #<span class="ident">type_name</span>, <span class="ident">param</span>)
+                                ))
                     }).<span class="ident">transpose</span>()<span class="question-mark">?</span>
                 })
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">CONTEXT_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
                 <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(<span class="ident">__context</span>))
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">INJECT_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">INJECTMUT_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
-                <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">last</span>().<span class="ident">expect</span>(<span class="string">&quot;At least one segment in path&quot;</span>);
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">PathArguments::AngleBracketed</span>(<span class="ident">AngleBracketedGenericArguments</span> {
-                    <span class="ident">args</span>, ..
-                }) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">last</span>.<span class="ident">arguments</span>
-                {
-                    <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">args</span>
-                        .<span class="ident">first</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
-
-                    <span class="kw">let</span> <span class="ident">ty_string</span> <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">to_token_stream</span>().<span class="ident">to_string</span>();
-
-                    <span class="kw">let</span> <span class="ident">acquire_lock</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">last</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>() <span class="op">==</span> <span class="string">&quot;InjectMut&quot;</span> {
-                        <span class="macro">quote!</span> {
-                            .<span class="ident">write</span>()
-                            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::LockAcquirePoisoned</span>(
-                                    #<span class="ident">ty_string</span>.<span class="ident">to_owned</span>(), 
-                                    <span class="string">&quot;write&quot;</span>.<span class="ident">to_owned</span>()))<span class="question-mark">?</span>
-                            .<span class="ident">downcast_mut</span>()
-                        }
-                    } <span class="kw">else</span> {
-                        <span class="macro">quote!</span> {
-                            .<span class="ident">read</span>()
-                            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::LockAcquirePoisoned</span>(
-                                    #<span class="ident">ty_string</span>.<span class="ident">to_owned</span>(), 
-                                    <span class="string">&quot;read&quot;</span>.<span class="ident">to_owned</span>()))<span class="question-mark">?</span>
-                            .<span class="ident">downcast_ref</span>()
-                        }
-                    };
-
-                    <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-                        <span class="op">&lt;</span>#<span class="ident">path</span><span class="op">&gt;</span><span class="ident">::new</span>(
-                            <span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>()
-                            .<span class="ident">ok_or</span>(
-                                <span class="ident">::buzz::types::errors::BuzzError::UseOfUnregesteredInject</span>(#<span class="ident">ty_string</span>.<span class="ident">to_owned</span>())
-                            )<span class="question-mark">?</span>
-                            #<span class="ident">acquire_lock</span>
-                            .<span class="ident">unwrap</span>()
-                        )
-                    })
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Inject was called without generic arguments&quot;</span>))
-                }
+                <span class="ident">inject_handler</span>(<span class="ident">path</span>)
             } <span class="kw">else</span> {
                 <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="macro">quote!</span> {
                     {
@@ -368,6 +336,50 @@
     };
 
     <span class="ident">TokenStream::from</span>(<span class="ident">expanded</span>)
+}
+
+<span class="kw">fn</span> <span class="ident">inject_handler</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">PathSegment</span>, <span class="ident">Colon2</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream2</span>, <span class="ident">TokenStream</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">last</span>().<span class="ident">expect</span>(<span class="string">&quot;At least one segment in path&quot;</span>);
+    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">PathArguments::AngleBracketed</span>(<span class="ident">AngleBracketedGenericArguments</span> { <span class="ident">args</span>, .. }) <span class="op">=</span>
+        <span class="kw-2">&amp;</span><span class="ident">last</span>.<span class="ident">arguments</span>
+    {
+        <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">args</span>
+            .<span class="ident">first</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">ty_string</span> <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">to_token_stream</span>().<span class="ident">to_string</span>();
+
+        <span class="kw">let</span> <span class="ident">acquire_lock</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">last</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>() <span class="op">==</span> <span class="string">&quot;InjectMut&quot;</span> {
+            <span class="macro">quote!</span> {
+                .<span class="ident">write</span>()
+                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::LockAcquirePoisoned</span>(
+                            #<span class="ident">ty_string</span>.<span class="ident">to_owned</span>(),
+                            <span class="string">&quot;write&quot;</span>.<span class="ident">to_owned</span>()))<span class="question-mark">?</span>
+                    .<span class="ident">downcast_mut</span>()
+            }
+        } <span class="kw">else</span> {
+            <span class="macro">quote!</span> {
+                .<span class="ident">read</span>()
+                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::LockAcquirePoisoned</span>(
+                            #<span class="ident">ty_string</span>.<span class="ident">to_owned</span>(),
+                            <span class="string">&quot;read&quot;</span>.<span class="ident">to_owned</span>()))<span class="question-mark">?</span>
+                    .<span class="ident">downcast_ref</span>()
+            }
+        };
+
+        <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
+            <span class="op">&lt;</span>#<span class="ident">path</span><span class="op">&gt;</span><span class="ident">::new</span>(
+                <span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>()
+                .<span class="ident">ok_or</span>(
+                    <span class="ident">::buzz::types::errors::BuzzError::UseOfUnregesteredInject</span>(#<span class="ident">ty_string</span>.<span class="ident">to_owned</span>())
+                    )<span class="question-mark">?</span>
+                #<span class="ident">acquire_lock</span>
+                .<span class="ident">unwrap</span>()
+                )
+        })
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Inject was called without generic arguments&quot;</span>))
+    }
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_codegen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
