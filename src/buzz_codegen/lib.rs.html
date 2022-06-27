@@ -142,8 +142,8 @@
 <span id="137">137</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::HttpMethod</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">format_ident</span>};
-<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">parse_macro_input</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">token::Comma</span>, <span class="ident">DeriveInput</span>, <span class="ident">Ident</span>, <span class="ident">Type</span>};
+<span class="kw">use</span> <span class="ident">quote::quote</span>;
+<span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">parse_macro_input</span>, <span class="ident">punctuated::Punctuated</span>, <span class="ident">token::Comma</span>, <span class="ident">DeriveInput</span>, <span class="ident">Ident</span>};
 
 <span class="kw">mod</span> <span class="ident">route_parser</span>;
 <span class="kw">mod</span> <span class="ident">routes</span>;
