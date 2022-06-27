@@ -154,6 +154,9 @@ struct JsonTestStruct {
     option_some: Option<String>,
     option_none: Option<String>,
     option_missing: Option<String>,
+    num_i32: i32,
+    num_f32: f32,
+    num_f64: f64,
 }
 
 #[derive(Deserialize)]
@@ -164,7 +167,7 @@ struct NestedJsonTestStruct {
 #[post("/json-struct", body = "b")]
 fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
     format!(
-        "json-struct|{}|{}|{}|{}|{}|{}|{}|{}",
+        "json-struct|{}|{}|{}|{}|{}|{}|{}|{}|{}|{:.5}|{:.5}",
         b.num_i64,
         b.string,
         b.boolean,
@@ -173,6 +176,9 @@ fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
         b.option_some.as_ref().unwrap(),
         b.option_none.as_ref().is_none().to_string(),
         b.option_missing.as_ref().is_none().to_string(),
+        b.num_i32,
+        b.num_f32,
+        b.num_f64,
     )
 }
 

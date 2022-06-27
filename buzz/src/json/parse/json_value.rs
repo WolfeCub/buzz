@@ -32,12 +32,50 @@ impl<T: Deserialize<JsonValue>> Deserialize<JsonValue> for Option<T> {
     }
 }
 
+impl Deserialize<JsonValue> for i32 {
+    fn deserialize(val: JsonValue) -> Result<Self, DeserializationError> {
+        match val {
+            JsonValue::Number(n) => Ok(n as i32),
+            thing => Err(DeserializationError::MismatchedTypes(
+                "Number".to_owned(),
+                thing.to_string(),
+            )),
+        }
+    }
+}
+
 impl Deserialize<JsonValue> for i64 {
     fn deserialize(val: JsonValue) -> Result<Self, DeserializationError> {
         match val {
             JsonValue::Number(n) => Ok(n),
             thing => Err(DeserializationError::MismatchedTypes(
                 "Number".to_owned(),
+                thing.to_string(),
+            )),
+        }
+    }
+}
+
+impl Deserialize<JsonValue> for f32 {
+    fn deserialize(val: JsonValue) -> Result<Self, DeserializationError> {
+        match val {
+            JsonValue::Fraction(n) => Ok(n as f32),
+            JsonValue::Number(n) => Ok(n as f32),
+            thing => Err(DeserializationError::MismatchedTypes(
+                "Fraction".to_owned(),
+                thing.to_string(),
+            )),
+        }
+    }
+}
+
+impl Deserialize<JsonValue> for f64 {
+    fn deserialize(val: JsonValue) -> Result<Self, DeserializationError> {
+        match val {
+            JsonValue::Fraction(n) => Ok(n),
+            JsonValue::Number(n) => Ok(n as f64),
+            thing => Err(DeserializationError::MismatchedTypes(
+                "Fraction".to_owned(),
                 thing.to_string(),
             )),
         }

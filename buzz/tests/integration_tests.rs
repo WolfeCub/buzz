@@ -1,3 +1,4 @@
+
 use std::collections::HashMap;
 
 use buzz_types::{HttpMethod, HttpRequest, HttpStatusCode};
@@ -272,6 +273,7 @@ proptest! {
         assert_eq!(response.body.unwrap(), format!("mixed-paths|{header}|42|42"));
     }
 
+    /* TODO: Fix floating point precision restriction of this test */
     #[test]
     fn it_responds_to_json_struct(
         num_i64: i64,
@@ -280,6 +282,9 @@ proptest! {
         vector in valid_str_vec(),
         string2 in valid_str(),
         option_some in valid_str(),
+        num_i32: i32,
+        num_f32: f32,
+        num_f64: f64,
     ) {
         let v = vector
             .iter()
@@ -296,9 +301,11 @@ proptest! {
                 "string2": "{}"
             }},
             "option_some": "{}",
-            "option_none": null
-        }}"#, num_i64, string, boolean, v, string2, option_some);
-
+            "option_none": null,
+            "num_i32": {},
+            "num_f32": {:.5},
+            "num_f64": {:.5},
+        }}"#, num_i64, string, boolean, v, string2, option_some, num_i32, num_f32, num_f64);
 
         let response = request!(
             Post, "/json-struct",
@@ -309,13 +316,16 @@ proptest! {
         assert_eq!(response.status_code, HttpStatusCode::Ok);
         assert_eq!(
             response.body.unwrap(),
-            format!("json-struct|{}|{}|{}|{}|{}|{}|true|true",
+            format!("json-struct|{}|{}|{}|{}|{}|{}|true|true|{}|{:.5}|{:.5}",
                     num_i64,
                     string,
                     boolean,
                     vector.join(","),
                     string2,
-                    option_some)
+                    option_some,
+                    num_i32,
+                    num_f32,
+                    num_f64)
         );
 
     }
