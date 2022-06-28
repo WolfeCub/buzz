@@ -150,7 +150,6 @@
 <span id="145">145</span>
 <span id="146">146</span>
 <span id="147">147</span>
-<span id="148">148</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::iter::Peekable</span>;
 
 <span class="kw">use</span> <span class="ident">buzz_types::errors::JsonParseError</span>;
@@ -283,7 +282,6 @@
             }
         }
 
-        <span class="comment">/* TODO: Unnest this */</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">JsonTok::String</span>(<span class="ident">key</span>) <span class="op">=</span> <span class="ident">value</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">JsonTok::Colon</span>)) <span class="op">=</span> <span class="ident">tokens</span>.<span class="ident">next</span>() {
                 <span class="kw">let</span> <span class="ident">thing</span> <span class="op">=</span> <span class="ident">parse_expr</span>(<span class="ident">tokens</span>)<span class="question-mark">?</span>;
