@@ -103,7 +103,6 @@ fn inject_mut_i32_change(mut val: InjectMut<i32>) -> impl Respond {
     *val = 77;
 }
 
-/* TODO figure out how to get rid of these clones for &String types */
 #[get("/inject-string")]
 fn inject_string(val: Inject<String>) -> impl Respond {
     val.clone()

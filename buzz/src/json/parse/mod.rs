@@ -130,7 +130,6 @@ fn parse_object(tokens: &mut Peekable<JsonTokIter>) -> Result<JsonValue, JsonPar
             }
         }
 
-        /* TODO: Unnest this */
         if let JsonTok::String(key) = value {
             if let Some(Ok(JsonTok::Colon)) = tokens.next() {
                 let thing = parse_expr(tokens)?;

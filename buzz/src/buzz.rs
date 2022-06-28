@@ -1,5 +1,7 @@
 use std::error::Error;
+use std::io::BufReader;
 use std::io::prelude::*;
+use std::io::BufWriter;
 use std::net::TcpListener;
 use std::net::TcpStream;
 
@@ -39,27 +41,36 @@ impl Buzz {
     }
 
     pub fn run_server(&self) {
-        let listener = TcpListener::bind(self.addr).unwrap();
+        let listener = TcpListener::bind(self.addr)
+            .expect(format!("Unabled to bind to: {}", self.addr).as_str());
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
 
-            match self.handle_connection(stream) {
-                Ok(_) => {}
-                Err(e) => panic!("{}", e),
+            if let Err(e) = self.handle_connection(stream) {
+                eprintln!("{}", e);
             }
         }
     }
 
-    fn handle_connection(&self, mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
+    fn handle_connection(&self, stream: TcpStream) -> Result<(), Box<dyn Error>> {
+        let mut buf_reader = BufReader::new(stream);
+
         let mut buffer = [0; 1024];
 
-        stream.read(&mut buffer)?;
+        buf_reader.read(&mut buffer)?;
 
         let request = parse_http(&buffer)?;
         let response = self.dispatch(request);
 
-        write_response(&mut stream, &response)?;
+        let mut buf_writer = BufWriter::new(buf_reader.into_inner());
+
+        write_response(&mut buf_writer, &response)?;
+
+        /* Into inner flushes for us */
+        buf_writer
+            .into_inner()?
+            .shutdown(std::net::Shutdown::Both)?;
 
         Ok(())
     }
@@ -77,7 +88,7 @@ impl Buzz {
     }
 }
 
-fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Result<()> {
+fn write_response<W: Write>(stream: &mut W, request: &HttpResponse) -> std::io::Result<()> {
     /* TODO: Not hardcoded version. What do we actually support? */
     stream.write(b"HTTP/1.1 ")?;
     stream.write((request.status_code as u32).to_string().as_bytes())?;
@@ -94,12 +105,8 @@ fn write_response(stream: &mut TcpStream, request: &HttpResponse) -> std::io::Re
 
     stream.write(b"\r\n")?;
 
-    /* TODO: Buffer? */
     if let Some(body) = &request.body {
         stream.write(body.as_bytes())?;
     }
-    stream.flush()?;
-
-    stream.shutdown(std::net::Shutdown::Both)?;
     Ok(())
 }
