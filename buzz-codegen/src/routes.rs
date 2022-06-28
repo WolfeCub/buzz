@@ -6,7 +6,7 @@ use syn::punctuated::Punctuated;
 use syn::token::Colon2;
 use syn::{
     parse_macro_input, AngleBracketedGenericArguments, AttributeArgs, ItemFn, Lit, Meta,
-    NestedMeta, PathArguments, PathSegment,
+    MetaNameValue, NestedMeta, PathArguments, PathSegment,
 };
 
 use crate::route_parser::parse_route;
@@ -21,21 +21,19 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
         return compile_error("Argument must be a string literal");
     };
 
-    /* TODO: Handle this nesting */
     let body_attr = attr_args[1..].iter().find_map(|arg| {
-        if let NestedMeta::Meta(Meta::NameValue(name_value)) = arg {
-            if let Lit::Str(lit_str) = &name_value.lit {
-                if "body" == name_value.path.segments.last().unwrap().ident.to_string() {
-                    Some(lit_str.value())
-                } else {
-                    None
-                }
-            } else {
-                None
+        if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
+            path: syn::Path { segments, .. },
+            lit: Lit::Str(lit_str),
+            ..
+        })) = arg
+        {
+            if "body" == segments.last()?.ident.to_string() {
+                return Some(lit_str.value());
             }
-        } else {
-            None
         }
+
+        None
     });
 
     let input = parse_macro_input!(item as ItemFn);
