@@ -197,6 +197,12 @@
 <span id="192">192</span>
 <span id="193">193</span>
 <span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
 <span class="kw">use</span> <span class="ident">buzz_types::dev</span>::<span class="kw-2">*</span>;
@@ -213,17 +219,15 @@
     <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">parse_http_path</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">parse_http_version</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">val</span>)) <span class="op">=</span> <span class="ident">parse_http_header</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span> {
-        <span class="ident">headers_vec</span>.<span class="ident">push</span>((<span class="ident">key</span>, <span class="ident">val</span>));
-    }
-    <span class="kw">let</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HashMap::from_iter</span>(<span class="ident">headers_vec</span>);
+    <span class="kw">let</span> <span class="ident">kvps</span> <span class="op">=</span> <span class="ident">parse_http_headers</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">Headers::from_iter</span>(<span class="ident">kvps</span>);
+
 
     <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="string">b&#39;\n&#39;</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::MissingNewlineAfterHeaders</span>);
     }
 
-    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="string">&quot;Content-Length&quot;</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> {
+    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">content_length</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
             <span class="prelude-val">Some</span>(<span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">parser</span>.<span class="ident">offset</span>(), <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">+</span> <span class="ident">num</span>))
         } <span class="kw">else</span> {
@@ -327,6 +331,14 @@
         .<span class="ident">substr</span>(<span class="ident">start_of_version</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">2</span>)
         .<span class="ident">parse</span>()
         .<span class="ident">map_err</span>(<span class="ident">HttpParseError::VersionParse</span>)<span class="question-mark">?</span>)
+}
+
+<span class="kw">fn</span> <span class="ident">parse_http_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)<span class="op">&gt;</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kvp</span>) <span class="op">=</span> <span class="ident">parse_http_header</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span> {
+        <span class="ident">vec</span>.<span class="ident">push</span>(<span class="ident">kvp</span>);
+    };
+    <span class="prelude-val">Ok</span>(<span class="ident">vec</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">parse_http_header</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
