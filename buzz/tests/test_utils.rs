@@ -31,7 +31,7 @@ macro_rules! request {
             method: HttpMethod::$method,
             path: &$path,
             version: 1.1,
-            headers: HashMap::from_iter([$(($key, $value.as_str())),*]),
+            headers: buzz::types::Headers::from_iter(vec![$(($key, $value.as_str())),*]),
             body: $body,
         })
     };

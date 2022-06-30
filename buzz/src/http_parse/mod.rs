@@ -14,17 +14,15 @@ pub fn parse_http(request: &[u8]) -> Result<HttpRequest, HttpParseError> {
     let path = parse_http_path(&parser)?;
     let version = parse_http_version(&parser)?;
 
-    let mut headers_vec: Vec<(&str, &str)> = Vec::new();
-    while let Some((key, val)) = parse_http_header(&parser)? {
-        headers_vec.push((key, val));
-    }
-    let headers = HashMap::from_iter(headers_vec);
+    let kvps = parse_http_headers(&parser)?;
+    let headers = Headers::from_iter(kvps);
+
 
     if Some(b'\n') != parser.take() {
         return Err(HttpParseError::MissingNewlineAfterHeaders);
     }
 
-    let body = headers.get("Content-Length").and_then(|val| {
+    let body = headers.content_length.and_then(|val| {
         if let Ok(num) = val.parse::<usize>() {
             Some(parser.substr(parser.offset(), parser.offset() + num))
         } else {
@@ -128,6 +126,14 @@ fn parse_http_version<'a>(parser: &Parser<'a>) -> Result<f64, HttpParseError> {
         .substr(start_of_version, parser.offset() - 2)
         .parse()
         .map_err(HttpParseError::VersionParse)?)
+}
+
+fn parse_http_headers<'a>(parser: &Parser<'a>) -> Result<Vec<(&'a str, &'a str)>, HttpParseError> {
+    let mut vec = Vec::new();
+    while let Some(kvp) = parse_http_header(&parser)? {
+        vec.push(kvp);
+    };
+    Ok(vec)
 }
 
 fn parse_http_header<'a>(

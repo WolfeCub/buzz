@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use crate::Headers;
 
 /// Holds metadata about the incoming `HttpRequest` that's being handled.
 pub struct BuzzContext<'a> {
-    pub headers: HashMap<&'a str, &'a str>,
+    pub headers: Headers<'a>,
 }

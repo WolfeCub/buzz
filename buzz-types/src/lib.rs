@@ -29,6 +29,9 @@ pub use buzz_context::*;
 mod inject;
 pub use inject::*;
 
+mod headers;
+pub use headers::*;
+
 mod dependancy_injection;
 mod parser;
 
