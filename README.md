@@ -2,7 +2,7 @@
 
 <!-- cargo-rdme start -->
 
-A rust web framework that avoids dependancies wherever possible.
+A rust web framework that avoids dependencies wherever possible.
 
 # Examples
 
