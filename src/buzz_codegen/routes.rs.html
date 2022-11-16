@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `buzz-codegen/src/routes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>routes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../buzz_codegen/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../buzz_codegen/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../buzz_codegen/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `buzz-codegen/src/routes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>routes.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../buzz_codegen/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../buzz_codegen/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../buzz_codegen/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -190,193 +185,192 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">buzz_types::HttpMethod</span>;
-<span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
-<span class="kw">use</span> <span class="ident">quote::__private::TokenStream</span> <span class="kw">as</span> <span class="ident">TokenStream2</span>;
-<span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">format_ident</span>, <span class="ident">quote</span>, <span class="ident">ToTokens</span>};
-<span class="kw">use</span> <span class="ident">syn::punctuated::Punctuated</span>;
-<span class="kw">use</span> <span class="ident">syn::token::Colon2</span>;
-<span class="kw">use</span> <span class="ident">syn</span>::{
-    <span class="ident">parse_macro_input</span>, <span class="ident">AngleBracketedGenericArguments</span>, <span class="ident">AttributeArgs</span>, <span class="ident">ItemFn</span>, <span class="ident">Lit</span>, <span class="ident">Meta</span>,
-    <span class="ident">MetaNameValue</span>, <span class="ident">NestedMeta</span>, <span class="ident">PathArguments</span>, <span class="ident">PathSegment</span>,
+</pre><pre class="rust"><code><span class="kw">use </span>buzz_types::HttpMethod;
+<span class="kw">use </span>proc_macro::TokenStream;
+<span class="kw">use </span>quote::__private::TokenStream <span class="kw">as </span>TokenStream2;
+<span class="kw">use </span>quote::{format_ident, quote, ToTokens};
+<span class="kw">use </span>syn::punctuated::Punctuated;
+<span class="kw">use </span>syn::token::Colon2;
+<span class="kw">use </span>syn::{
+    parse_macro_input, AngleBracketedGenericArguments, AttributeArgs, ItemFn, Lit, Meta,
+    MetaNameValue, NestedMeta, PathArguments, PathSegment,
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::route_parser::parse_route</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::route_parser::parse_route;
+<span class="kw">use </span><span class="kw">crate</span>::utils::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_wrapper</span>(<span class="ident">method</span>: <span class="ident">HttpMethod</span>, <span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">attr_args</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">attr</span> <span class="kw">as</span> <span class="ident">AttributeArgs</span>);
+<span class="kw">pub fn </span>create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>attr_args = <span class="macro">parse_macro_input!</span>(attr <span class="kw">as </span>AttributeArgs);
 
-    <span class="kw">let</span> <span class="ident">user_route</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Lit</span>(<span class="ident">syn::Lit::Str</span>(<span class="ident">lit</span>)) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr_args</span>[<span class="number">0</span>] {
-        <span class="ident">parse_route</span>(<span class="ident">lit</span>.<span class="ident">value</span>()).<span class="ident">expect</span>(<span class="string">&quot;Invalid route&quot;</span>)
-    } <span class="kw">else</span> {
-        <span class="kw">return</span> <span class="ident">compile_error</span>(<span class="string">&quot;Argument must be a string literal&quot;</span>);
+    <span class="kw">let </span>user_route = <span class="kw">if let </span>NestedMeta::Lit(syn::Lit::Str(lit)) = <span class="kw-2">&amp;</span>attr_args[<span class="number">0</span>] {
+        parse_route(lit.value()).expect(<span class="string">&quot;Invalid route&quot;</span>)
+    } <span class="kw">else </span>{
+        <span class="kw">return </span>compile_error(<span class="string">&quot;Argument must be a string literal&quot;</span>);
     };
 
-    <span class="kw">let</span> <span class="ident">body_attr</span> <span class="op">=</span> <span class="ident">attr_args</span>[<span class="number">1</span>..].<span class="ident">iter</span>().<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::NameValue</span>(<span class="ident">MetaNameValue</span> {
-            <span class="ident">path</span>: <span class="ident">syn::Path</span> { <span class="ident">segments</span>, .. },
-            <span class="ident">lit</span>: <span class="ident">Lit::Str</span>(<span class="ident">lit_str</span>),
+    <span class="kw">let </span>body_attr = attr_args[<span class="number">1</span>..].iter().find_map(|arg| {
+        <span class="kw">if let </span>NestedMeta::Meta(Meta::NameValue(MetaNameValue {
+            path: syn::Path { segments, .. },
+            lit: Lit::Str(lit_str),
             ..
-        })) <span class="op">=</span> <span class="ident">arg</span>
+        })) = arg
         {
-            <span class="kw">if</span> <span class="string">&quot;body&quot;</span> <span class="op">==</span> <span class="ident">segments</span>.<span class="ident">last</span>()<span class="question-mark">?</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">lit_str</span>.<span class="ident">value</span>());
+            <span class="kw">if </span><span class="string">&quot;body&quot; </span>== segments.last()<span class="question-mark">?</span>.ident.to_string() {
+                <span class="kw">return </span><span class="prelude-val">Some</span>(lit_str.value());
             }
         }
 
-        <span class="prelude-val">None</span>
-    });
+        <span class="prelude-val">None
+    </span>});
 
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">ItemFn</span>);
+    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(item <span class="kw">as </span>ItemFn);
 
-    <span class="kw">let</span> <span class="ident">fn_args_result</span> <span class="op">=</span> <span class="ident">input</span>
-        .<span class="ident">sig</span>
-        .<span class="ident">inputs</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::FnArg::Typed</span>(<span class="ident">pat_type</span>) <span class="op">=</span> <span class="ident">arg</span> {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::Pat::Ident</span>(<span class="ident">pat_ident</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_type</span>.<span class="ident">pat</span> {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::Type::Path</span>(<span class="ident">type_path</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">pat_type</span>.<span class="ident">ty</span> {
-                        <span class="prelude-val">Ok</span>((<span class="kw-2">&amp;</span><span class="ident">pat_ident</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">type_path</span>.<span class="ident">path</span>.<span class="ident">segments</span>))
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Type is not a path&quot;</span>))
+    <span class="kw">let </span>fn_args_result = input
+        .sig
+        .inputs
+        .iter()
+        .map(|arg| {
+            <span class="kw">if let </span>syn::FnArg::Typed(pat_type) = arg {
+                <span class="kw">if let </span>syn::Pat::Ident(pat_ident) = <span class="kw-2">&amp;*</span>pat_type.pat {
+                    <span class="kw">if let </span>syn::Type::Path(type_path) = <span class="kw-2">&amp;*</span>pat_type.ty {
+                        <span class="prelude-val">Ok</span>((<span class="kw-2">&amp;</span>pat_ident.ident, <span class="kw-2">&amp;</span>type_path.path.segments))
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">Err</span>(compile_error(<span class="string">&quot;Type is not a path&quot;</span>))
                     }
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Found untyped non-identifier arg&quot;</span>))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Err</span>(compile_error(<span class="string">&quot;Found untyped non-identifier arg&quot;</span>))
                 }
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Found self in args which is not allowed&quot;</span>))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(compile_error(<span class="string">&quot;Found self in args which is not allowed&quot;</span>))
             }
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;();
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">fn_args_result</span> {
-        <span class="kw">return</span> <span class="ident">TokenStream::from</span>(<span class="ident">e</span>);
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = fn_args_result {
+        <span class="kw">return </span>TokenStream::from(e);
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">route_index</span> <span class="op">=</span> <span class="number">0usize</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>route_index = <span class="number">0usize</span>;
 
-    <span class="kw">let</span> <span class="ident">fn_arg_tokens_result</span> <span class="op">=</span> <span class="ident">fn_args_result</span>
-        .<span class="ident">unwrap</span>()
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">arg_name</span>, <span class="ident">path</span>)<span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">type_name</span> <span class="op">=</span> <span class="macro">quote!</span>(#<span class="ident">path</span>).<span class="ident">to_string</span>().<span class="ident">replace</span>(<span class="string">&quot; &quot;</span>, <span class="string">&quot;&quot;</span>);
-            <span class="kw">if</span> <span class="ident">body_attr</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">body_attr</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">==</span> <span class="ident">arg_name</span>.<span class="ident">to_string</span>() {
-                <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-                    <span class="op">&lt;</span>#<span class="ident">path</span> <span class="kw">as</span> <span class="ident">buzz::types::traits::FromBody</span><span class="op">&gt;</span><span class="ident">::from_body</span>(
-                        <span class="kw-2">&amp;</span><span class="ident">__body</span>.<span class="ident">ok_or</span>(<span class="ident">::buzz::types::errors::BuzzError::BadRequest</span>(
-                            <span class="string">&quot;Body was empty&quot;</span>.<span class="ident">to_owned</span>()
-                        ))<span class="question-mark">?</span>
-                    )<span class="question-mark">?</span>
-                })
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">OPTION_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
-                <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">arg_name</span>.<span class="ident">to_string</span>();
-                <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-                    <span class="ident">__query_params</span>.<span class="ident">get</span>(#<span class="ident">name</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">param</span><span class="op">|</span> {
-                        <span class="ident">param</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::BadRequest</span>(
-                                <span class="macro">format!</span>(<span class="string">&quot;Expected type `{}` but got &#39;{}&#39;&quot;</span>, #<span class="ident">type_name</span>, <span class="ident">param</span>)
+    <span class="kw">let </span>fn_arg_tokens_result = fn_args_result
+        .unwrap()
+        .into_iter()
+        .map(|(arg_name, path)| {
+            <span class="kw">let </span>type_name = <span class="macro">quote!</span>(#path).to_string().replace(<span class="string">&quot; &quot;</span>, <span class="string">&quot;&quot;</span>);
+            <span class="kw">if </span>body_attr.is_some() &amp;&amp; <span class="kw-2">*</span>body_attr.as_ref().unwrap() == arg_name.to_string() {
+                <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                    &lt;#path <span class="kw">as </span>buzz::types::traits::FromBody&gt;::from_body(
+                        <span class="kw-2">&amp;</span>__body.ok_or(::buzz::types::errors::BuzzError::BadRequest(
+                            <span class="string">&quot;Body was empty&quot;</span>.to_owned()
+                        ))<span class="question-mark">?
+                    </span>)<span class="question-mark">?
+                </span>})
+            } <span class="kw">else if </span>match_path(<span class="kw-2">&amp;</span>OPTION_PATHS, <span class="kw-2">&amp;</span>path) {
+                <span class="kw">let </span>name = arg_name.to_string();
+                <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                    __query_params.get(#name).map(|param| {
+                        param.parse().map_err(|e| ::buzz::types::errors::BuzzError::BadRequest(
+                                <span class="macro">format!</span>(<span class="string">&quot;Expected type `{}` but got &#39;{}&#39;&quot;</span>, #type_name, param)
                                 ))
-                    }).<span class="ident">transpose</span>()<span class="question-mark">?</span>
-                })
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">CONTEXT_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
-                <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(<span class="ident">__context</span>))
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">INJECT_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">match_path</span>(<span class="kw-2">&amp;</span><span class="ident">INJECTMUT_PATHS</span>, <span class="kw-2">&amp;</span><span class="ident">path</span>) {
-                <span class="ident">inject_handler</span>(<span class="ident">path</span>)
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="macro">quote!</span> {
+                    }).transpose()<span class="question-mark">?
+                </span>})
+            } <span class="kw">else if </span>match_path(<span class="kw-2">&amp;</span>CONTEXT_PATHS, <span class="kw-2">&amp;</span>path) {
+                <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(__context))
+            } <span class="kw">else if </span>match_path(<span class="kw-2">&amp;</span>INJECT_PATHS, <span class="kw-2">&amp;</span>path) || match_path(<span class="kw-2">&amp;</span>INJECTMUT_PATHS, <span class="kw-2">&amp;</span>path) {
+                inject_handler(path)
+            } <span class="kw">else </span>{
+                <span class="kw">let </span>tmp = <span class="macro">quote! </span>{
                     {
-                        <span class="kw">let</span> <span class="ident">param</span> <span class="op">=</span> <span class="ident">__route_params</span>[#<span class="ident">route_index</span>];
-                        <span class="ident">param</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::BadRequest</span>(
-                            <span class="macro">format!</span>(<span class="string">&quot;Expected type `{}` but got &#39;{}&#39;&quot;</span>, #<span class="ident">type_name</span>, <span class="ident">param</span>)
-                        ))<span class="question-mark">?</span>
-                    }
+                        <span class="kw">let </span>param = __route_params[#route_index];
+                        param.parse().map_err(|e| ::buzz::types::errors::BuzzError::BadRequest(
+                            <span class="macro">format!</span>(<span class="string">&quot;Expected type `{}` but got &#39;{}&#39;&quot;</span>, #type_name, param)
+                        ))<span class="question-mark">?
+                    </span>}
                 };
-                <span class="ident">route_index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="prelude-val">Ok</span>(<span class="ident">tmp</span>)
+                route_index += <span class="number">1</span>;
+                <span class="prelude-val">Ok</span>(tmp)
             }
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;();
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">fn_arg_tokens_result</span> {
-        <span class="kw">return</span> <span class="ident">TokenStream::from</span>(<span class="ident">e</span>);
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = fn_arg_tokens_result {
+        <span class="kw">return </span>TokenStream::from(e);
     }
 
-    <span class="kw">let</span> <span class="ident">fn_arg_tokens</span> <span class="op">=</span> <span class="ident">fn_arg_tokens_result</span>.<span class="ident">unwrap</span>();
+    <span class="kw">let </span>fn_arg_tokens = fn_arg_tokens_result.unwrap();
 
-    <span class="kw">let</span> <span class="ident">enum_name</span> <span class="op">=</span> <span class="macro">format_ident!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">format!</span>(<span class="string">&quot;{:#?}&quot;</span>, <span class="ident">method</span>));
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> <span class="ident">wrapper_name</span> <span class="op">=</span> <span class="ident">make_wrapper_name</span>(<span class="ident">name</span>);
-    <span class="kw">let</span> <span class="ident">metadata_name</span> <span class="op">=</span> <span class="ident">make_metedata_name</span>(<span class="ident">name</span>);
+    <span class="kw">let </span>enum_name = <span class="macro">format_ident!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">format!</span>(<span class="string">&quot;{:#?}&quot;</span>, method));
+    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>input.sig.ident;
+    <span class="kw">let </span>wrapper_name = make_wrapper_name(name);
+    <span class="kw">let </span>metadata_name = make_metedata_name(name);
 
-    <span class="kw">let</span> <span class="ident">expanded</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        #<span class="ident">input</span>
+    <span class="kw">let </span>expanded = <span class="macro">quote! </span>{
+        #input
 
-        <span class="kw">fn</span> #<span class="ident">wrapper_name</span>(
-            <span class="ident">__route_params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-            <span class="ident">__query_params</span>: <span class="ident">::std::collections::HashMap</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-            <span class="ident">__body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-            <span class="ident">__context</span>: <span class="ident">::buzz::types::BuzzContext</span>,
-            <span class="ident">__dependancy_injection</span>: <span class="kw-2">&amp;</span><span class="ident">::buzz::types::dev::DependancyInjection</span>,
-        ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">::buzz::types::HttpResponse</span>, <span class="ident">::buzz::types::errors::BuzzError</span><span class="op">&gt;</span> {
-            <span class="prelude-val">Ok</span>(#<span class="ident">name</span>(
-                #(#<span class="ident">fn_arg_tokens</span>,)<span class="op">*</span>
-            ).<span class="ident">respond</span>())
+        <span class="kw">fn </span>#wrapper_name(
+            __route_params: Vec&lt;<span class="kw-2">&amp;</span>str&gt;,
+            __query_params: ::std::collections::HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str&gt;,
+            __body: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+            __context: ::buzz::types::BuzzContext,
+            __dependancy_injection: <span class="kw-2">&amp;</span>::buzz::types::dev::DependancyInjection,
+        ) -&gt; <span class="prelude-ty">Result</span>&lt;::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError&gt; {
+            <span class="prelude-val">Ok</span>(#name(
+                #(#fn_arg_tokens,)*
+            ).respond())
         }
 
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_upper_case_globals</span>)]</span>
-        <span class="kw">const</span> #<span class="ident">metadata_name</span>: <span class="ident">::buzz::types::RouteMetadata</span> <span class="op">=</span> <span class="ident">::buzz::types::RouteMetadata</span> {
-            <span class="ident">route</span>: <span class="kw-2">&amp;</span>[#(#<span class="ident">user_route</span>,)<span class="kw-2">*</span>],
-            <span class="ident">method</span>: <span class="ident">::buzz::types::HttpMethod</span>::#<span class="ident">enum_name</span>,
+        <span class="attribute">#[allow(non_upper_case_globals)]
+        </span><span class="kw">const </span>#metadata_name: ::buzz::types::RouteMetadata = ::buzz::types::RouteMetadata {
+            route: <span class="kw-2">&amp;</span>[#(#user_route,)<span class="kw-2">*</span>],
+            method: ::buzz::types::HttpMethod::#enum_name,
         };
     };
 
-    <span class="ident">TokenStream::from</span>(<span class="ident">expanded</span>)
+    TokenStream::from(expanded)
 }
 
-<span class="kw">fn</span> <span class="ident">inject_handler</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">PathSegment</span>, <span class="ident">Colon2</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream2</span>, <span class="ident">TokenStream</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">last</span>().<span class="ident">expect</span>(<span class="string">&quot;At least one segment in path&quot;</span>);
-    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">PathArguments::AngleBracketed</span>(<span class="ident">AngleBracketedGenericArguments</span> { <span class="ident">args</span>, .. }) <span class="op">=</span>
-        <span class="kw-2">&amp;</span><span class="ident">last</span>.<span class="ident">arguments</span>
+<span class="kw">fn </span>inject_handler(path: <span class="kw-2">&amp;</span>Punctuated&lt;PathSegment, Colon2&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;TokenStream2, TokenStream&gt; {
+    <span class="kw">let </span>last = path.last().expect(<span class="string">&quot;At least one segment in path&quot;</span>);
+    <span class="kw">if let </span>PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
+        <span class="kw-2">&amp;</span>last.arguments
     {
-        <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">args</span>
-            .<span class="ident">first</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
+        <span class="kw">let </span>ty = args
+            .first()
+            .expect(<span class="string">&quot;Type checker should ensure that Inject always has one argument&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">ty_string</span> <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">to_token_stream</span>().<span class="ident">to_string</span>();
+        <span class="kw">let </span>ty_string = ty.to_token_stream().to_string();
 
-        <span class="kw">let</span> <span class="ident">acquire_lock</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">last</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>() <span class="op">==</span> <span class="string">&quot;InjectMut&quot;</span> {
-            <span class="macro">quote!</span> {
-                .<span class="ident">write</span>()
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::LockAcquirePoisoned</span>(
-                            #<span class="ident">ty_string</span>.<span class="ident">to_owned</span>(),
-                            <span class="string">&quot;write&quot;</span>.<span class="ident">to_owned</span>()))<span class="question-mark">?</span>
-                    .<span class="ident">downcast_mut</span>()
+        <span class="kw">let </span>acquire_lock = <span class="kw">if </span>last.ident.to_string() == <span class="string">&quot;InjectMut&quot; </span>{
+            <span class="macro">quote! </span>{
+                .write()
+                    .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
+                            #ty_string.to_owned(),
+                            <span class="string">&quot;write&quot;</span>.to_owned()))<span class="question-mark">?
+                    </span>.downcast_mut()
             }
-        } <span class="kw">else</span> {
-            <span class="macro">quote!</span> {
-                .<span class="ident">read</span>()
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="ident">::buzz::types::errors::BuzzError::LockAcquirePoisoned</span>(
-                            #<span class="ident">ty_string</span>.<span class="ident">to_owned</span>(),
-                            <span class="string">&quot;read&quot;</span>.<span class="ident">to_owned</span>()))<span class="question-mark">?</span>
-                    .<span class="ident">downcast_ref</span>()
+        } <span class="kw">else </span>{
+            <span class="macro">quote! </span>{
+                .read()
+                    .map_err(|_e| ::buzz::types::errors::BuzzError::LockAcquirePoisoned(
+                            #ty_string.to_owned(),
+                            <span class="string">&quot;read&quot;</span>.to_owned()))<span class="question-mark">?
+                    </span>.downcast_ref()
             }
         };
 
-        <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-            <span class="op">&lt;</span>#<span class="ident">path</span><span class="op">&gt;</span><span class="ident">::new</span>(
-                <span class="ident">__dependancy_injection</span>.<span class="ident">get</span>::<span class="op">&lt;</span>#<span class="ident">ty</span><span class="op">&gt;</span>()
-                .<span class="ident">ok_or</span>(
-                    <span class="ident">::buzz::types::errors::BuzzError::UseOfUnregesteredInject</span>(#<span class="ident">ty_string</span>.<span class="ident">to_owned</span>())
-                    )<span class="question-mark">?</span>
-                #<span class="ident">acquire_lock</span>
-                .<span class="ident">unwrap</span>()
+        <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+            &lt;#path&gt;::new(
+                __dependancy_injection.get::&lt;#ty&gt;()
+                .ok_or(
+                    ::buzz::types::errors::BuzzError::UseOfUnregesteredInject(#ty_string.to_owned())
+                    )<span class="question-mark">?
+                </span>#acquire_lock
+                .unwrap()
                 )
         })
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">compile_error</span>(<span class="string">&quot;Inject was called without generic arguments&quot;</span>))
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Err</span>(compile_error(<span class="string">&quot;Inject was called without generic arguments&quot;</span>))
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_codegen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_codegen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

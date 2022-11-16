@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `buzz/src/http_parse/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../buzz/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `buzz/src/http_parse/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../buzz/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -201,208 +196,203 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>buzz_types::dev::<span class="kw-2">*</span>;
+<span class="kw">use </span>buzz_types::errors::HttpParseError;
+<span class="kw">use </span>buzz_types::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">buzz_types::dev</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">buzz_types::errors::HttpParseError</span>;
-<span class="kw">use</span> <span class="ident">buzz_types</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span>;
+<span class="kw">pub fn </span>parse_http(request: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;HttpRequest, HttpParseError&gt; {
+    <span class="kw">let </span>parser = Parser::new(request);
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_http</span>(<span class="ident">request</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpRequest</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">parser</span> <span class="op">=</span> <span class="ident">Parser::new</span>(<span class="ident">request</span>);
+    <span class="kw">let </span>method = parse_http_method(<span class="kw-2">&amp;</span>parser)<span class="question-mark">?</span>;
+    <span class="kw">let </span>path = parse_http_path(<span class="kw-2">&amp;</span>parser)<span class="question-mark">?</span>;
+    <span class="kw">let </span>version = parse_http_version(<span class="kw-2">&amp;</span>parser)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">method</span> <span class="op">=</span> <span class="ident">parse_http_method</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">parse_http_path</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">parse_http_version</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">let</span> <span class="ident">kvps</span> <span class="op">=</span> <span class="ident">parse_http_headers</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">Headers::from_iter</span>(<span class="ident">kvps</span>);
+    <span class="kw">let </span>kvps = parse_http_headers(<span class="kw-2">&amp;</span>parser)<span class="question-mark">?</span>;
+    <span class="kw">let </span>headers = Headers::from_iter(kvps);
 
 
-    <span class="kw">if</span> <span class="prelude-val">Some</span>(<span class="string">b&#39;\n&#39;</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::MissingNewlineAfterHeaders</span>);
+    <span class="kw">if </span><span class="prelude-val">Some</span>(<span class="string">b&#39;\n&#39;</span>) != parser.take() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::MissingNewlineAfterHeaders);
     }
 
-    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">content_length</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">parser</span>.<span class="ident">offset</span>(), <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">+</span> <span class="ident">num</span>))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+    <span class="kw">let </span>body = headers.content_length.and_then(|val| {
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(num) = val.parse::&lt;usize&gt;() {
+            <span class="prelude-val">Some</span>(parser.substr(parser.offset(), parser.offset() + num))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     });
 
-    <span class="prelude-val">Ok</span>(<span class="ident">HttpRequest</span> {
-        <span class="ident">method</span>,
-        <span class="ident">path</span>,
-        <span class="ident">version</span>,
-        <span class="ident">headers</span>,
-        <span class="ident">body</span>,
+    <span class="prelude-val">Ok</span>(HttpRequest {
+        method,
+        path,
+        version,
+        headers,
+        body,
     })
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_method</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpMethod</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
+<span class="kw">fn </span>parse_http_method&lt;<span class="lifetime">&#39;a</span>&gt;(parser: <span class="kw-2">&amp;</span>Parser&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;HttpMethod, HttpParseError&gt; {
+    <span class="kw">let </span>starting_pos = parser.offset();
 
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take_if</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span>) {
-        <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_whitespace</span>() {
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(c) = parser.take_if(|c| c != <span class="string">b&#39;\r&#39;</span>) {
+        <span class="kw">if </span>c.is_ascii_whitespace() {
             <span class="kw">break</span>;
         }
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">c</span>.<span class="ident">is_ascii_uppercase</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Method</span>(<span class="macro">format!</span>(
-                <span class="string">&quot;Found non ASCII uppercase character {c} in method&quot;</span>
-            )));
+        <span class="kw">if </span>!c.is_ascii_uppercase() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Method(<span class="macro">format!</span>(
+                <span class="string">&quot;Found non ASCII uppercase character {c} in method&quot;
+            </span>)));
         }
     }
 
-    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Method</span>(
-            <span class="string">&quot;Request started with whitespace which may mean no method was specified&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="kw">if </span>starting_pos == parser.offset() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Method(
+            <span class="string">&quot;Request started with whitespace which may mean no method was specified&quot;</span>.to_owned(),
         ));
     }
 
-    <span class="kw">let</span> <span class="ident">potential_method</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>);
-    <span class="kw">let</span> <span class="ident">method</span> <span class="op">=</span> <span class="ident">potential_method</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">HttpMethod</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-        <span class="ident">HttpParseError::Method</span>(<span class="macro">format!</span>(
+    <span class="kw">let </span>potential_method = parser.substr(starting_pos, parser.offset() - <span class="number">1</span>);
+    <span class="kw">let </span>method = potential_method.parse::&lt;HttpMethod&gt;().map_err(|<span class="kw">_</span>| {
+        HttpParseError::Method(<span class="macro">format!</span>(
             <span class="string">&quot;Provided method {:#?} is not a valid http method&quot;</span>,
-            <span class="ident">potential_method</span>
+            potential_method
         ))
     })<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">method</span>)
+    <span class="prelude-val">Ok</span>(method)
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_path</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
+<span class="kw">fn </span>parse_http_path&lt;<span class="lifetime">&#39;a</span>&gt;(parser: <span class="kw-2">&amp;</span>Parser&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, HttpParseError&gt; {
+    <span class="kw">let </span>starting_pos = parser.offset();
 
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
-        <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_whitespace</span>() {
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(c) = parser.take() {
+        <span class="kw">if </span>c.is_ascii_whitespace() {
             <span class="kw">break</span>;
         }
     }
 
-    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Path</span>(
-            <span class="string">&quot;Empty path found requires at least /&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="kw">if </span>starting_pos == parser.offset() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Path(
+            <span class="string">&quot;Empty path found requires at least /&quot;</span>.to_owned(),
         ));
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>))
+    <span class="prelude-val">Ok</span>(parser.substr(starting_pos, parser.offset() - <span class="number">1</span>))
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_version</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
+<span class="kw">fn </span>parse_http_version&lt;<span class="lifetime">&#39;a</span>&gt;(parser: <span class="kw-2">&amp;</span>Parser&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;f64, HttpParseError&gt; {
+    <span class="kw">let </span>starting_pos = parser.offset();
 
-    <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">5</span> {
-        <span class="kw">match</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
+    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">5 </span>{
+        <span class="kw">match </span>parser.take() {
             <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; {}
-            <span class="prelude-val">None</span> =&gt; {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::VersionText</span>(
-                    <span class="string">&quot;Unexpected end of input mid HTTP version&quot;</span>.<span class="ident">to_owned</span>(),
+            <span class="prelude-val">None </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::VersionText(
+                    <span class="string">&quot;Unexpected end of input mid HTTP version&quot;</span>.to_owned(),
                 ));
             }
         }
     }
 
-    <span class="kw">if</span> <span class="ident">parser</span>.<span class="ident">substr_to_offset</span>(<span class="ident">starting_pos</span>) <span class="op">!</span><span class="op">=</span> <span class="string">&quot;HTTP/&quot;</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::VersionText</span>(
-            <span class="string">&quot;Version did not start with &#39;HTTP/&#39;&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="kw">if </span>parser.substr_to_offset(starting_pos) != <span class="string">&quot;HTTP/&quot; </span>{
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::VersionText(
+            <span class="string">&quot;Version did not start with &#39;HTTP/&#39;&quot;</span>.to_owned(),
         ));
     }
 
-    <span class="kw">let</span> <span class="ident">start_of_version</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
+    <span class="kw">let </span>start_of_version = parser.offset();
 
-    <span class="ident">parser</span>.<span class="ident">consume_while</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span>);
+    parser.consume_while(|c| c != <span class="string">b&#39;\r&#39;</span>);
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">eat_newline</span>(<span class="ident">parser</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Path</span>(
-            <span class="string">&quot;Expected network newline after version number&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="kw">if </span>!eat_newline(parser) {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Path(
+            <span class="string">&quot;Expected network newline after version number&quot;</span>.to_owned(),
         ));
     }
 
-    <span class="kw">if</span> <span class="ident">start_of_version</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Path</span>(<span class="string">&quot;Empty version found&quot;</span>.<span class="ident">to_owned</span>()));
+    <span class="kw">if </span>start_of_version == parser.offset() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Path(<span class="string">&quot;Empty version found&quot;</span>.to_owned()));
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">parser</span>
-        .<span class="ident">substr</span>(<span class="ident">start_of_version</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">2</span>)
-        .<span class="ident">parse</span>()
-        .<span class="ident">map_err</span>(<span class="ident">HttpParseError::VersionParse</span>)<span class="question-mark">?</span>)
+    <span class="prelude-val">Ok</span>(parser
+        .substr(start_of_version, parser.offset() - <span class="number">2</span>)
+        .parse()
+        .map_err(HttpParseError::VersionParse)<span class="question-mark">?</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)<span class="op">&gt;</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kvp</span>) <span class="op">=</span> <span class="ident">parse_http_header</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>)<span class="question-mark">?</span> {
-        <span class="ident">vec</span>.<span class="ident">push</span>(<span class="ident">kvp</span>);
+<span class="kw">fn </span>parse_http_headers&lt;<span class="lifetime">&#39;a</span>&gt;(parser: <span class="kw-2">&amp;</span>Parser&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str)&gt;, HttpParseError&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>vec = Vec::new();
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(kvp) = parse_http_header(<span class="kw-2">&amp;</span>parser)<span class="question-mark">? </span>{
+        vec.push(kvp);
     };
-    <span class="prelude-val">Ok</span>(<span class="ident">vec</span>)
+    <span class="prelude-val">Ok</span>(vec)
 }
 
-<span class="kw">fn</span> <span class="ident">parse_http_header</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)<span class="op">&gt;</span>, <span class="ident">HttpParseError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">starting_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">found_colon</span> <span class="op">=</span> <span class="bool-val">false</span>;
+<span class="kw">fn </span>parse_http_header&lt;<span class="lifetime">&#39;a</span>&gt;(
+    parser: <span class="kw-2">&amp;</span>Parser&lt;<span class="lifetime">&#39;a</span>&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str)&gt;, HttpParseError&gt; {
+    <span class="kw">let </span>starting_pos = parser.offset();
+    <span class="kw">let </span><span class="kw-2">mut </span>found_colon = <span class="bool-val">false</span>;
 
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take</span>() {
-        <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">b&#39;:&#39;</span> {
-            <span class="ident">found_colon</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(c) = parser.take() {
+        <span class="kw">if </span>c == <span class="string">b&#39;:&#39; </span>{
+            found_colon = <span class="bool-val">true</span>;
             <span class="kw">break</span>;
         }
 
-        <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">b&#39;\r&#39;</span> {
+        <span class="kw">if </span>c == <span class="string">b&#39;\r&#39; </span>{
             <span class="kw">break</span>;
         }
 
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">c</span>.<span class="ident">is_ascii_alphabetic</span>() <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;-&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;_&#39;</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Header</span>(
-                <span class="macro">format!</span>(<span class="string">&quot;Encountered unexpected character: {c} in head&quot;</span>).<span class="ident">to_string</span>(),
+        <span class="kw">if </span>!c.is_ascii_alphabetic() &amp;&amp; c != <span class="string">b&#39;-&#39; </span>&amp;&amp; c != <span class="string">b&#39;_&#39; </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Header(
+                <span class="macro">format!</span>(<span class="string">&quot;Encountered unexpected character: {c} in head&quot;</span>).to_string(),
             ));
         }
     }
 
-    <span class="kw">if</span> <span class="ident">starting_pos</span> <span class="op">==</span> <span class="ident">parser</span>.<span class="ident">offset</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Header</span>(<span class="string">&quot;Header may not be empty&quot;</span>.<span class="ident">to_owned</span>()));
+    <span class="kw">if </span>starting_pos == parser.offset() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Header(<span class="string">&quot;Header may not be empty&quot;</span>.to_owned()));
     }
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">peek</span>() {
-        <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">b&#39;\n&#39;</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(c) = parser.peek() {
+        <span class="kw">if </span>c == <span class="string">b&#39;\n&#39; </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
     }
 
-    <span class="kw">if</span> <span class="ident">found_colon</span> <span class="op">==</span> <span class="bool-val">false</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Header</span>(
-            <span class="string">&quot;Header must use : to delimit key and value&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="kw">if </span>found_colon == <span class="bool-val">false </span>{
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Header(
+            <span class="string">&quot;Header must use : to delimit key and value&quot;</span>.to_owned(),
         ));
     }
 
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">starting_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>);
-    <span class="kw">let</span> <span class="ident">value_pos</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">offset</span>();
+    <span class="kw">let </span>key = parser.substr(starting_pos, parser.offset() - <span class="number">1</span>);
+    <span class="kw">let </span>value_pos = parser.offset();
 
-    <span class="ident">parser</span>.<span class="ident">consume_while</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">!</span><span class="op">=</span> <span class="string">b&#39;\r&#39;</span>);
+    parser.consume_while(|c| c != <span class="string">b&#39;\r&#39;</span>);
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">eat_newline</span>(<span class="ident">parser</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">HttpParseError::Header</span>(
-            <span class="string">&quot;Expected header to end with network newline&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="kw">if </span>!eat_newline(parser) {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpParseError::Header(
+            <span class="string">&quot;Expected header to end with network newline&quot;</span>.to_owned(),
         ));
     }
 
-    <span class="comment">/* TODO: Not sure how efficient trim is */</span>
-    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((
-        <span class="ident">key</span>,
-        <span class="ident">parser</span>.<span class="ident">substr</span>(<span class="ident">value_pos</span>, <span class="ident">parser</span>.<span class="ident">offset</span>() <span class="op">-</span> <span class="number">1</span>).<span class="ident">trim</span>(),
+    <span class="comment">/* TODO: Not sure how efficient trim is */
+    </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((
+        key,
+        parser.substr(value_pos, parser.offset() - <span class="number">1</span>).trim(),
     )))
 }
 
-<span class="kw">fn</span> <span class="ident">eat_newline</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">parser</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">network_newline</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">take_n</span>(<span class="number">2</span>);
+<span class="kw">fn </span>eat_newline&lt;<span class="lifetime">&#39;a</span>&gt;(parser: <span class="kw-2">&amp;</span>Parser&lt;<span class="lifetime">&#39;a</span>&gt;) -&gt; bool {
+    <span class="kw">let </span>network_newline = parser.take_n(<span class="number">2</span>);
 
-    <span class="kw">return</span> <span class="ident">network_newline</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">network_newline</span>.<span class="ident">unwrap</span>() <span class="op">==</span> <span class="string">b&quot;\r\n&quot;</span>;
+    <span class="kw">return </span>network_newline.is_some() &amp;&amp; network_newline.unwrap() == <span class="string">b&quot;\r\n&quot;</span>;
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

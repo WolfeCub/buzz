@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["JsonValue",""]],"struct":[["Json",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["JsonValue",""]],"struct":[["Json",""]]};

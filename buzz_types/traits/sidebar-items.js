@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Deserialize",""],["FromBody",""],["Respond",""]]});
+window.SIDEBAR_ITEMS = {"trait":[["Deserialize",""],["FromBody",""],["Respond",""]]};

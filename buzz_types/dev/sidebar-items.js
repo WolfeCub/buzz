@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["DependancyInjection",""],["Parser",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["DependancyInjection",""],["Parser",""]]};

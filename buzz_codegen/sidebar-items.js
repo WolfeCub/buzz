@@ -1,1 +1,1 @@
-initSidebarItems({"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"derive":[["Deserialize",""]],"macro":[["routes",""]]});
+window.SIDEBAR_ITEMS = {"attr":[["delete",""],["get",""],["options",""],["patch",""],["post",""],["put",""]],"derive":[["Deserialize",""]],"macro":[["routes",""]]};

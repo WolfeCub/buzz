@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `buzz/src/buzz.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>buzz.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../buzz/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `buzz/src/buzz.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>buzz.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../buzz/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../buzz/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -115,118 +110,117 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::error::Error</span>;
-<span class="kw">use</span> <span class="ident">std::io::BufReader</span>;
-<span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std::io::BufWriter</span>;
-<span class="kw">use</span> <span class="ident">std::net::TcpListener</span>;
-<span class="kw">use</span> <span class="ident">std::net::TcpStream</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::error::Error;
+<span class="kw">use </span>std::io::BufReader;
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::BufWriter;
+<span class="kw">use </span>std::net::TcpListener;
+<span class="kw">use </span>std::net::TcpStream;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::http_parse</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::routes</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">buzz_types::dev::DependancyInjection</span>;
-<span class="kw">use</span> <span class="ident">buzz_types::errors::BuzzError</span>;
-<span class="kw">use</span> <span class="ident">buzz_types</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::http_parse::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::routes::<span class="kw-2">*</span>;
+<span class="kw">use </span>buzz_types::dev::DependancyInjection;
+<span class="kw">use </span>buzz_types::errors::BuzzError;
+<span class="kw">use </span>buzz_types::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Buzz</span> {
-    <span class="ident">addr</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-    <span class="ident">routes</span>: <span class="ident">Routes</span>,
-    <span class="ident">di</span>: <span class="ident">DependancyInjection</span>,
+<span class="kw">pub struct </span>Buzz {
+    addr: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    routes: Routes,
+    di: DependancyInjection,
 }
 
-<span class="kw">impl</span> <span class="ident">Buzz</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">addr</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">addr</span>,
-            <span class="ident">routes</span>: <span class="ident">Routes::new</span>(),
-            <span class="ident">di</span>: <span class="ident">DependancyInjection::new</span>(),
+<span class="kw">impl </span>Buzz {
+    <span class="kw">pub fn </span>new(addr: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            addr,
+            routes: Routes::new(),
+            di: DependancyInjection::new(),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">routes</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Handler</span>, <span class="ident">RouteMetadata</span>)<span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">insert</span>(<span class="ident">routes</span>);
-        <span class="self">self</span>
+    <span class="kw">pub fn </span>routes(<span class="kw-2">mut </span><span class="self">self</span>, routes: Vec&lt;(Handler, RouteMetadata)&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.routes.insert(routes);
+        <span class="self">self
+    </span>}
+
+    <span class="kw">pub fn </span>router(<span class="self">self</span>, fun: <span class="kw">fn</span>(<span class="self">Self</span>) -&gt; <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        fun(<span class="self">self</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">router</span>(<span class="self">self</span>, <span class="ident">fun</span>: <span class="kw">fn</span>(<span class="self">Self</span>) -&gt; <span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">fun</span>(<span class="self">self</span>)
-    }
+    <span class="kw">pub fn </span>register&lt;T: <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, injectable: T) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.di.register(injectable);
+        <span class="self">self
+    </span>}
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">register</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">injectable</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">di</span>.<span class="ident">register</span>(<span class="ident">injectable</span>);
-        <span class="self">self</span>
-    }
+    <span class="kw">pub fn </span>run_server(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw">let </span>listener = TcpListener::bind(<span class="self">self</span>.addr)
+            .expect(<span class="macro">format!</span>(<span class="string">&quot;Unabled to bind to: {}&quot;</span>, <span class="self">self</span>.addr).as_str());
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_server</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">TcpListener::bind</span>(<span class="self">self</span>.<span class="ident">addr</span>)
-            .<span class="ident">expect</span>(<span class="macro">format!</span>(<span class="string">&quot;Unabled to bind to: {}&quot;</span>, <span class="self">self</span>.<span class="ident">addr</span>).<span class="ident">as_str</span>());
+        <span class="kw">for </span>stream <span class="kw">in </span>listener.incoming() {
+            <span class="kw">let </span>stream = stream.unwrap();
 
-        <span class="kw">for</span> <span class="ident">stream</span> <span class="kw">in</span> <span class="ident">listener</span>.<span class="ident">incoming</span>() {
-            <span class="kw">let</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">unwrap</span>();
-
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle_connection</span>(<span class="ident">stream</span>) {
-                <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.handle_connection(stream) {
+                <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, e);
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">handle_connection</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">stream</span>: <span class="ident">TcpStream</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf_reader</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="ident">stream</span>);
+    <span class="kw">fn </span>handle_connection(<span class="kw-2">&amp;</span><span class="self">self</span>, stream: TcpStream) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf_reader = BufReader::new(stream);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">1024</span>];
+        <span class="kw">let </span><span class="kw-2">mut </span>buffer = [<span class="number">0</span>; <span class="number">1024</span>];
 
-        <span class="ident">buf_reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
+        buf_reader.read(<span class="kw-2">&amp;mut </span>buffer)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">parse_http</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dispatch</span>(<span class="ident">request</span>);
+        <span class="kw">let </span>request = parse_http(<span class="kw-2">&amp;</span>buffer)<span class="question-mark">?</span>;
+        <span class="kw">let </span>response = <span class="self">self</span>.dispatch(request);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf_writer</span> <span class="op">=</span> <span class="ident">BufWriter::new</span>(<span class="ident">buf_reader</span>.<span class="ident">into_inner</span>());
+        <span class="kw">let </span><span class="kw-2">mut </span>buf_writer = BufWriter::new(buf_reader.into_inner());
 
-        <span class="ident">write_response</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf_writer</span>, <span class="kw-2">&amp;</span><span class="ident">response</span>)<span class="question-mark">?</span>;
+        write_response(<span class="kw-2">&amp;mut </span>buf_writer, <span class="kw-2">&amp;</span>response)<span class="question-mark">?</span>;
 
-        <span class="comment">/* Into inner flushes for us */</span>
-        <span class="ident">buf_writer</span>
-            .<span class="ident">into_inner</span>()<span class="question-mark">?</span>
-            .<span class="ident">shutdown</span>(<span class="ident">std::net::Shutdown::Both</span>)<span class="question-mark">?</span>;
+        <span class="comment">/* Into inner flushes for us */
+        </span>buf_writer
+            .into_inner()<span class="question-mark">?
+            </span>.shutdown(std::net::Shutdown::Both)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dispatch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">request</span>: <span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">routes</span>.<span class="ident">match_route_params</span>(<span class="ident">request</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">di</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">response</span>) =&gt; <span class="ident">response</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">BuzzError::BadRequest</span>(<span class="ident">err</span>)) =&gt; {
-                <span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::BadRequest</span>).<span class="ident">body</span>(<span class="ident">err</span>.<span class="ident">to_string</span>())
+    <span class="kw">pub fn </span>dispatch(<span class="kw-2">&amp;</span><span class="self">self</span>, request: HttpRequest) -&gt; HttpResponse {
+        <span class="kw">match </span><span class="self">self</span>.routes.match_route_params(request, <span class="kw-2">&amp;</span><span class="self">self</span>.di) {
+            <span class="prelude-val">Ok</span>(response) =&gt; response,
+            <span class="prelude-val">Err</span>(BuzzError::BadRequest(err)) =&gt; {
+                HttpResponse::new(HttpStatusCode::BadRequest).body(err.to_string())
             }
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                <span class="ident">HttpResponse::new</span>(<span class="ident">HttpStatusCode::InternalServerError</span>).<span class="ident">body</span>(<span class="ident">err</span>.<span class="ident">to_string</span>())
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                HttpResponse::new(HttpStatusCode::InternalServerError).body(err.to_string())
             }
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">write_response</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="ident">stream</span>: <span class="kw-2">&amp;mut</span> <span class="ident">W</span>, <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">HttpResponse</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="comment">/* TODO: Not hardcoded version. What do we actually support? */</span>
-    <span class="ident">stream</span>.<span class="ident">write</span>(<span class="string">b&quot;HTTP/1.1 &quot;</span>)<span class="question-mark">?</span>;
-    <span class="ident">stream</span>.<span class="ident">write</span>((<span class="ident">request</span>.<span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">to_string</span>().<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-    <span class="ident">stream</span>.<span class="ident">write</span>(<span class="string">b&quot; &quot;</span>)<span class="question-mark">?</span>;
-    <span class="ident">stream</span>.<span class="ident">write</span>(<span class="ident">request</span>.<span class="ident">status_code</span>.<span class="ident">to_string</span>().<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-    <span class="ident">stream</span>.<span class="ident">write</span>(<span class="string">b&quot;\r\n&quot;</span>)<span class="question-mark">?</span>;
+<span class="kw">fn </span>write_response&lt;W: Write&gt;(stream: <span class="kw-2">&amp;mut </span>W, request: <span class="kw-2">&amp;</span>HttpResponse) -&gt; std::io::Result&lt;()&gt; {
+    <span class="comment">/* TODO: Not hardcoded version. What do we actually support? */
+    </span>stream.write(<span class="string">b&quot;HTTP/1.1 &quot;</span>)<span class="question-mark">?</span>;
+    stream.write((request.status_code <span class="kw">as </span>u32).to_string().as_bytes())<span class="question-mark">?</span>;
+    stream.write(<span class="string">b&quot; &quot;</span>)<span class="question-mark">?</span>;
+    stream.write(request.status_code.to_string().as_bytes())<span class="question-mark">?</span>;
+    stream.write(<span class="string">b&quot;\r\n&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">headers</span> {
-        <span class="ident">stream</span>.<span class="ident">write</span>(<span class="ident">key</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-        <span class="ident">stream</span>.<span class="ident">write</span>(<span class="string">b&quot;: &quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">stream</span>.<span class="ident">write</span>(<span class="ident">value</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-        <span class="ident">stream</span>.<span class="ident">write</span>(<span class="string">b&quot;\r\n&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">for </span>(key, value) <span class="kw">in </span><span class="kw-2">&amp;</span>request.headers {
+        stream.write(key.as_bytes())<span class="question-mark">?</span>;
+        stream.write(<span class="string">b&quot;: &quot;</span>)<span class="question-mark">?</span>;
+        stream.write(value.as_bytes())<span class="question-mark">?</span>;
+        stream.write(<span class="string">b&quot;\r\n&quot;</span>)<span class="question-mark">?</span>;
     }
 
-    <span class="ident">stream</span>.<span class="ident">write</span>(<span class="string">b&quot;\r\n&quot;</span>)<span class="question-mark">?</span>;
+    stream.write(<span class="string">b&quot;\r\n&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">body</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">body</span> {
-        <span class="ident">stream</span>.<span class="ident">write</span>(<span class="ident">body</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(body) = <span class="kw-2">&amp;</span>request.body {
+        stream.write(body.as_bytes())<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
