@@ -6,31 +6,33 @@ pub struct Headers<'a> {
 }
 
 impl<'a> Headers<'a> {
+    fn with_capacity(len: usize) -> Self {
+        Self {
+            content_type: None,
+            content_length: None,
+            remaining: Vec::with_capacity(len)
+        }
+    }
+
     pub fn from_iter(pairs: Vec<(&'a str, &'a str)>) -> Self
     {
-        let mut other_headers: Vec<(&str, &str)> = Vec::new();
-        let mut content_length = None;
-        let mut content_type = None;
+        let mut result = Headers::with_capacity(pairs.len());
 
         for (key, val) in pairs {
             match key {
                 "Content-Length" => {
-                    content_length = Some(val);
+                    result.content_length = Some(val);
                 }
                 "Content-Type" => {
-                    content_type = Some(val);
+                    result.content_type = Some(val);
                 }
                 _ => {
-                    other_headers.push((key, val));
+                    result.remaining.push((key, val));
                 }
             };
         }
 
-        Headers {
-            content_type,
-            content_length,
-            remaining: other_headers,
-        }
+        result
     }
 
     pub fn get(&self, key: &'a str) -> Option<&'a str> {

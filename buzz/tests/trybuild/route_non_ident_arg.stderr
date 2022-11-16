@@ -5,14 +5,6 @@ error: macros that expand to items must be delimited with braces or followed by 
   | ^^^^^^^^^^^^^^^^^^^^^^^^
   |
   = note: this error originates in the attribute macro `get` (in Nightly builds, run with -Z macro-backtrace for more info)
-help: change the delimiters to curly braces
-  |
-3 | {}
-  | ~
-help: add a semicolon
-  |
-3 | #[get("/non-ident-arg")];
-  |                         +
 
 error: Found untyped non-identifier arg
  --> tests/trybuild/route_non_ident_arg.rs:3:1
@@ -29,14 +21,6 @@ error: macros that expand to items must be delimited with braces or followed by 
   | ^^^^^^^^^^^^^^^^^^^^^^^^
   |
   = note: this error originates in the attribute macro `get` (in Nightly builds, run with -Z macro-backtrace for more info)
-help: change the delimiters to curly braces
-  |
-7 | {}
-  | ~
-help: add a semicolon
-  |
-7 | #[get("/non-ident-arg")];
-  |                         +
 
 error: Found untyped non-identifier arg
  --> tests/trybuild/route_non_ident_arg.rs:7:1
@@ -53,14 +37,6 @@ error: macros that expand to items must be delimited with braces or followed by 
    | ^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the attribute macro `get` (in Nightly builds, run with -Z macro-backtrace for more info)
-help: change the delimiters to curly braces
-   |
-11 | {}
-   | ~
-help: add a semicolon
-   |
-11 | #[get("/non-ident-arg")];
-   |                         +
 
 error: Found untyped non-identifier arg
   --> tests/trybuild/route_non_ident_arg.rs:11:1

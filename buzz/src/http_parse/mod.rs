@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use buzz_types::dev::*;
 use buzz_types::errors::HttpParseError;
 use buzz_types::*;

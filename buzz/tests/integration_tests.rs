@@ -1,6 +1,3 @@
-
-use std::collections::HashMap;
-
 use buzz_types::{HttpMethod, HttpRequest, HttpStatusCode};
 
 use proptest::prelude::*;
