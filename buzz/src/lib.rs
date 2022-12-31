@@ -122,7 +122,16 @@ fn json(request_body: Json<Task>) -> impl Respond {
 ```
 */
 
-mod http_parse;
+macro_rules! bench_use {
+    ($pkg: ident) => {
+        #[cfg(not(feature = "benchmark-internals"))]
+        mod $pkg;
+        #[cfg(feature = "benchmark-internals")]
+        pub mod $pkg;
+    };
+}
+
+bench_use!(http_parse);
 mod buzz;
 mod routes;
 pub mod json;

@@ -10,3 +10,12 @@ buzz-codegen = { path = "../buzz-codegen" }
 [dev-dependencies]
 proptest = "1"
 trybuild = "1.0"
+criterion = "0.3"
+
+[features]
+benchmark-internals = []
+
+[[bench]]
+name = "http_parser_benchmark"
+harness = false
+required-features = ["benchmark-internals"]
