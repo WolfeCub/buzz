@@ -127,9 +127,13 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
             __context: ::buzz::types::BuzzContext,
             __dependancy_injection: &::buzz::types::dev::DependancyInjection,
         ) -> Result<::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError> {
-            Ok(#name(
-                #(#fn_arg_tokens,)*
-            ).respond())
+            std::panic::catch_unwind(|| {
+                Ok(#name(
+                    #(#fn_arg_tokens,)*
+                ).respond())
+            }).unwrap_or_else(|_| {
+                Ok(::buzz::types::HttpResponse::new(::buzz::types::HttpStatusCode::InternalServerError))
+            })
         }
 
         #[allow(non_upper_case_globals)]
