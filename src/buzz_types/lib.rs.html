@@ -40,6 +40,9 @@
 <span id="40">40</span>
 <span id="41">41</span>
 <span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This crate contains common types that are used by multiple other buzz crates
 
 /// Contains error types
@@ -74,13 +77,16 @@
 <span class="kw">mod </span>headers;
 <span class="kw">pub use </span>headers::<span class="kw-2">*</span>;
 
+<span class="kw">mod </span>middleware;
+<span class="kw">pub use </span>middleware::<span class="kw-2">*</span>;
+
 <span class="kw">mod </span>dependancy_injection;
 <span class="kw">mod </span>parser;
 
 <span class="doccomment">/// Contains things are used internally by Buzz across crates that are not meant for user consuption
 </span><span class="kw">pub mod </span>dev {
-    <span class="kw">pub use </span><span class="kw">super</span>::parser::<span class="kw-2">*</span>;
     <span class="kw">pub use </span><span class="kw">super</span>::dependancy_injection::<span class="kw-2">*</span>;
+    <span class="kw">pub use </span><span class="kw">super</span>::parser::<span class="kw-2">*</span>;
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="buzz_types" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

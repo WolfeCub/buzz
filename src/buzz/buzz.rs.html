@@ -110,9 +110,23 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::error::Error;
-<span class="kw">use </span>std::io::BufReader;
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::BufReader;
 <span class="kw">use </span>std::io::BufWriter;
 <span class="kw">use </span>std::net::TcpListener;
 <span class="kw">use </span>std::net::TcpStream;
@@ -127,6 +141,7 @@
     addr: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
     routes: Routes,
     di: DependancyInjection,
+    middleware: Vec&lt;Middleware&gt;,
 }
 
 <span class="kw">impl </span>Buzz {
@@ -135,6 +150,7 @@
             addr,
             routes: Routes::new(),
             di: DependancyInjection::new(),
+            middleware: <span class="macro">vec!</span>[],
         }
     }
 
@@ -149,6 +165,11 @@
 
     <span class="kw">pub fn </span>register&lt;T: <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, injectable: T) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.di.register(injectable);
+        <span class="self">self
+    </span>}
+
+    <span class="kw">pub fn </span>middleware(<span class="kw-2">mut </span><span class="self">self</span>, middleware: Middleware) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.middleware.push(middleware);
         <span class="self">self
     </span>}
 
@@ -188,7 +209,14 @@
     }
 
     <span class="kw">pub fn </span>dispatch(<span class="kw-2">&amp;</span><span class="self">self</span>, request: HttpRequest) -&gt; HttpResponse {
-        <span class="kw">match </span><span class="self">self</span>.routes.match_route_params(request, <span class="kw-2">&amp;</span><span class="self">self</span>.di) {
+        <span class="kw">let </span><span class="kw-2">mut </span>r = request;
+        <span class="kw">for </span>middleware <span class="kw">in </span><span class="self">self</span>.middleware.iter() {
+            <span class="kw">match </span>middleware(r) {
+                <span class="prelude-val">Ok</span>(req) =&gt; r = req,
+                <span class="prelude-val">Err</span>(resp) =&gt; <span class="kw">return </span>resp,
+            }
+        }
+        <span class="kw">match </span><span class="self">self</span>.routes.match_route_params(r, <span class="kw-2">&amp;</span><span class="self">self</span>.di) {
             <span class="prelude-val">Ok</span>(response) =&gt; response,
             <span class="prelude-val">Err</span>(BuzzError::BadRequest(err)) =&gt; {
                 HttpResponse::new(HttpStatusCode::BadRequest).body(err.to_string())

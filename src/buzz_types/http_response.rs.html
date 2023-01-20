@@ -72,6 +72,8 @@
 <span id="72">72</span>
 <span id="73">73</span>
 <span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
 </pre><pre class="rust"><code><span class="doccomment">/// Holds the data that will be formatted back into an HTTP response by the server.
 ///
 /// This type is what [`respond`](crate::traits::Respond::respond) returns and since all
@@ -116,11 +118,11 @@
     </span>}
 
     <span class="kw">pub fn </span>body(<span class="kw-2">mut </span><span class="self">self</span>, body: String) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.headers.push((<span class="string">&quot;Content-Length&quot;</span>.to_owned(), body.len().to_string()));
+        <span class="self">self</span>.headers
+            .push((<span class="string">&quot;Content-Length&quot;</span>.to_owned(), body.len().to_string()));
         <span class="self">self</span>.body = <span class="prelude-val">Some</span>(body);
         <span class="self">self
     </span>}
-
 }
 
 <span class="doccomment">/// Represents the status code of an HTTP response.
@@ -131,6 +133,7 @@
     NoContent = <span class="number">204</span>,
     BadRequest = <span class="number">400</span>,
     NotFound = <span class="number">404</span>,
+    ImATeapot = <span class="number">418</span>,
     InternalServerError = <span class="number">500</span>,
 }
 
@@ -141,6 +144,7 @@
             <span class="self">Self</span>::NoContent =&gt; <span class="string">&quot;No Content&quot;</span>,
             <span class="self">Self</span>::BadRequest =&gt; <span class="string">&quot;Bad Request&quot;</span>,
             <span class="self">Self</span>::NotFound =&gt; <span class="string">&quot;Not Found&quot;</span>,
+            <span class="self">Self</span>::ImATeapot =&gt; <span class="string">&quot;I&#39;m a teapot&quot;</span>,
             <span class="self">Self</span>::InternalServerError =&gt; <span class="string">&quot;Internal Server Error&quot;</span>,
         }
         .to_owned()
