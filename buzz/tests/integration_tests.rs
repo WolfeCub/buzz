@@ -336,3 +336,19 @@ fn it_responds_to_panic_internal_server_error() {
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::InternalServerError);
 }
+
+#[test]
+fn it_responds_to_middleware() {
+    let response = request!(Get, "/dummy");
+
+    assert!(response.body.is_none());
+    assert_eq!(response.status_code, HttpStatusCode::ImATeapot);
+}
+
+#[test]
+fn it_responds_to_chained_middleware() {
+    let response = request!(Get, "/chained-middleware");
+
+    assert!(response.body.is_none());
+    assert_eq!(response.status_code, HttpStatusCode::InternalServerError);
+}

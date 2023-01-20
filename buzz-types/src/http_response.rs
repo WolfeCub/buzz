@@ -42,11 +42,11 @@ impl HttpResponse {
     }
 
     pub fn body(mut self, body: String) -> Self {
-        self.headers.push(("Content-Length".to_owned(), body.len().to_string()));
+        self.headers
+            .push(("Content-Length".to_owned(), body.len().to_string()));
         self.body = Some(body);
         self
     }
-
 }
 
 /// Represents the status code of an HTTP response.
@@ -57,6 +57,7 @@ pub enum HttpStatusCode {
     NoContent = 204,
     BadRequest = 400,
     NotFound = 404,
+    ImATeapot = 418,
     InternalServerError = 500,
 }
 
@@ -67,6 +68,7 @@ impl ToString for HttpStatusCode {
             Self::NoContent => "No Content",
             Self::BadRequest => "Bad Request",
             Self::NotFound => "Not Found",
+            Self::ImATeapot => "I'm a teapot",
             Self::InternalServerError => "Internal Server Error",
         }
         .to_owned()

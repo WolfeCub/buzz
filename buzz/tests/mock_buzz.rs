@@ -1,5 +1,6 @@
 use buzz::prelude::*;
 use buzz::{json::Json, prelude};
+use buzz_types::{HttpRequest, HttpResponse, HttpStatusCode};
 
 #[get("/simple-str")]
 fn simple_returns_str() -> impl Respond {
@@ -176,6 +177,32 @@ fn panic() -> impl Respond {
     panic!("I'm a little panic short and stout");
 }
 
+#[get("/dummy")]
+fn dummy() -> impl Respond {
+    "dummy"
+}
+
+#[get("/chained-middleware")]
+fn chained_middleware() -> impl Respond {
+    "chained-middleware"
+}
+
+fn server_error_dummy_middleware(request: HttpRequest) -> Result<HttpRequest, HttpResponse> {
+    if request.path == "/dummy" {
+        Err(HttpResponse::new(HttpStatusCode::ImATeapot))
+    } else {
+        Ok(request)
+    }
+}
+
+fn server_error_chained_middleware(request: HttpRequest) -> Result<HttpRequest, HttpResponse> {
+    if request.path == "/chained-middleware" {
+        Err(HttpResponse::new(HttpStatusCode::InternalServerError))
+    } else {
+        Ok(request)
+    }
+}
+
 pub(crate) fn make_buzz() -> Buzz {
     Buzz::new("127.0.0.1:8080")
         .routes(routes!(
@@ -202,10 +229,14 @@ pub(crate) fn make_buzz() -> Buzz {
             mixed_paths,
             json_struct,
             panic,
+            dummy,
+            chained_middleware,
         ))
         .register(42i32)
         .register("fourty two".to_owned())
         .register(TestStruct {
             prop: "fourty two".to_owned(),
         })
+        .middleware(server_error_dummy_middleware)
+        .middleware(server_error_chained_middleware)
 }

@@ -1,0 +1,18 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 54754c8b0e7869ca62b26bf8484896cb9104ddf9c69d916da367e013ef0cf4ac # shrinks to route = "#"
+cc 7148494c3a42c425aa6b3bb9057e639ab55c0132ed2fe3d00f646007c7020cd7 # shrinks to value = "="
+cc ecf8b5f510bbc8062d5e130af42e7fce69f1caacf3077d8a4159530790cf67e4 # shrinks to route = "!"
+cc 8318ab16148fc01528c7e017ce320102d21f0b36fa522f47387df5cb0654721c # shrinks to route = "a"
+cc 5e57ce038aaf7e5577bc71c198b8132fd6b98b09ff26f2c87202c1d491099333 # shrinks to value = "A"
+cc 29817cea0904f690d7d98071ce9963eb3c02bb3fe47e371e5fb5e24565453b3a # shrinks to value = "~"
+cc 46507b1675bac7a9a5e044aee95b6d1cff4f06077cc5077d1f7e120027ec2177 # shrinks to value1 = "@", value2 = "~", value3 = "~"
+cc ea30eb5121499eb9601036baee9d1dc512ab0d4cb633c86f654778210cc4fe42 # shrinks to value1 = "0", value2 = "a", value3 = "="
+cc 97c4ca16ae3fad473970eb51406498e4e31c988b6bc161f18af3a2dfccd3924a # shrinks to value = "a"
+cc 23a8d7c94e2a597f57137a3bf59eef8461c15b7e8fb3deece3dd9bfa1028f240 # shrinks to route = "A", query = "a", header = "a"
+cc 0d261b1e0cb0d3670f1c677f6d256b7600b890231a81489c8f18723debe76334 # shrinks to route_one = "a", route_two = "A", query_one = "=", query_two = "@", header = "#"
+cc 8a6f76acc1b47021d3b9aef5476e998e85e3d1ab936501b1c6806167c7e2a61b # shrinks to num_i64 = 0, string = "", boolean = false, vector = [], string2 = "", option_some = "", num_i32 = 0, num_f32 = 0.0, num_f64 = 0.0

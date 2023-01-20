@@ -1,6 +1,6 @@
 use std::error::Error;
-use std::io::BufReader;
 use std::io::prelude::*;
+use std::io::BufReader;
 use std::io::BufWriter;
 use std::net::TcpListener;
 use std::net::TcpStream;
@@ -15,6 +15,7 @@ pub struct Buzz {
     addr: &'static str,
     routes: Routes,
     di: DependancyInjection,
+    middleware: Vec<Middleware>,
 }
 
 impl Buzz {
@@ -23,6 +24,7 @@ impl Buzz {
             addr,
             routes: Routes::new(),
             di: DependancyInjection::new(),
+            middleware: vec![],
         }
     }
 
@@ -37,6 +39,11 @@ impl Buzz {
 
     pub fn register<T: 'static>(mut self, injectable: T) -> Self {
         self.di.register(injectable);
+        self
+    }
+
+    pub fn middleware(mut self, middleware: Middleware) -> Self {
+        self.middleware.push(middleware);
         self
     }
 
@@ -76,7 +83,14 @@ impl Buzz {
     }
 
     pub fn dispatch(&self, request: HttpRequest) -> HttpResponse {
-        match self.routes.match_route_params(request, &self.di) {
+        let mut r = request;
+        for middleware in self.middleware.iter() {
+            match middleware(r) {
+                Ok(req) => r = req,
+                Err(resp) => return resp,
+            }
+        }
+        match self.routes.match_route_params(r, &self.di) {
             Ok(response) => response,
             Err(BuzzError::BadRequest(err)) => {
                 HttpResponse::new(HttpStatusCode::BadRequest).body(err.to_string())

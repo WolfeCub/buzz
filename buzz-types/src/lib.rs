@@ -32,11 +32,14 @@ pub use inject::*;
 mod headers;
 pub use headers::*;
 
+mod middleware;
+pub use middleware::*;
+
 mod dependancy_injection;
 mod parser;
 
 /// Contains things are used internally by Buzz across crates that are not meant for user consuption
 pub mod dev {
-    pub use super::parser::*;
     pub use super::dependancy_injection::*;
+    pub use super::parser::*;
 }
