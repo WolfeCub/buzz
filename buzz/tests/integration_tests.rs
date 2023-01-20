@@ -328,3 +328,11 @@ proptest! {
     }
 
 }
+
+#[test]
+fn it_responds_to_panic_internal_server_error() {
+    let response = request!(Get, "/panic");
+
+    assert!(response.body.is_none());
+    assert_eq!(response.status_code, HttpStatusCode::InternalServerError);
+}

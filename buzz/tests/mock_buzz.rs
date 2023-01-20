@@ -84,12 +84,7 @@ fn combination_mixed(
 
     Some(format!(
         "combination-mixed|{}|{}|{}|{}|{}|{}",
-        route_one,
-        route_two,
-        query_one?,
-        query_two?,
-        header?,
-        *inject_i32
+        route_one, route_two, query_one?, query_two?, header?, *inject_i32
     ))
 }
 
@@ -135,12 +130,7 @@ fn mixed_paths(
     val2: buzz::prelude::Inject<i32>,
 ) -> impl Respond {
     let header = ctx.headers.get("Header-Name");
-    Some(format!(
-        "mixed-paths|{}|{}|{}",
-        header?,
-        *val,
-        *val2
-    ))
+    Some(format!("mixed-paths|{}|{}|{}", header?, *val, *val2))
 }
 
 #[derive(Deserialize)]
@@ -181,6 +171,11 @@ fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
     )
 }
 
+#[get("/panic")]
+fn panic() -> impl Respond {
+    panic!("I'm a little panic short and stout");
+}
+
 pub(crate) fn make_buzz() -> Buzz {
     Buzz::new("127.0.0.1:8080")
         .routes(routes!(
@@ -206,6 +201,7 @@ pub(crate) fn make_buzz() -> Buzz {
             query_partial_path,
             mixed_paths,
             json_struct,
+            panic,
         ))
         .register(42i32)
         .register("fourty two".to_owned())
