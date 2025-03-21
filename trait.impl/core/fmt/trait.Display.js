@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["buzz_types",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.1/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"buzz_types/errors/enum.BuzzError.html\" title=\"enum buzz_types::errors::BuzzError\">BuzzError</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.1/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"buzz_types/errors/enum.DeserializationError.html\" title=\"enum buzz_types::errors::DeserializationError\">DeserializationError</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.1/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"buzz_types/errors/enum.HttpParseError.html\" title=\"enum buzz_types::errors::HttpParseError\">HttpParseError</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.1/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"buzz_types/errors/enum.JsonParseError.html\" title=\"enum buzz_types::errors::JsonParseError\">JsonParseError</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.1/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"buzz_types/errors/enum.RouteParseError.html\" title=\"enum buzz_types::errors::RouteParseError\">RouteParseError</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[1462]}

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["BuzzError",""],["DeserializationError",""],["HttpParseError",""],["JsonParseError",""],["RouteParseError",""]]};
+window.SIDEBAR_ITEMS = {"enum":["BuzzError","DeserializationError","HttpParseError","JsonParseError","RouteParseError"]};
