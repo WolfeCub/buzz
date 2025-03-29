@@ -47,20 +47,20 @@ impl Buzz {
         self
     }
 
-    pub fn run_server(&self) {
+    pub async fn run_server(&self) {
         let listener = TcpListener::bind(self.addr)
             .expect(format!("Unabled to bind to: {}", self.addr).as_str());
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
 
-            if let Err(e) = self.handle_connection(stream) {
+            if let Err(e) = self.handle_connection(stream).await {
                 eprintln!("{}", e);
             }
         }
     }
 
-    fn handle_connection(&self, stream: TcpStream) -> Result<(), Box<dyn Error>> {
+    async fn handle_connection(&self, stream: TcpStream) -> Result<(), Box<dyn Error>> {
         let mut buf_reader = BufReader::new(stream);
 
         let mut buffer = [0; 1024];
@@ -68,7 +68,7 @@ impl Buzz {
         buf_reader.read(&mut buffer)?;
 
         let request = parse_http(&buffer)?;
-        let response = self.dispatch(request);
+        let response = self.dispatch(request).await;
 
         let mut buf_writer = BufWriter::new(buf_reader.into_inner());
 
@@ -82,7 +82,7 @@ impl Buzz {
         Ok(())
     }
 
-    pub fn dispatch(&self, request: HttpRequest) -> HttpResponse {
+    pub async fn dispatch<'a>(&self, request: HttpRequest<'a>) -> HttpResponse {
         let mut r = request;
         for middleware in self.middleware.iter() {
             match middleware(r) {
@@ -90,7 +90,7 @@ impl Buzz {
                 Err(resp) => return resp,
             }
         }
-        match self.routes.match_route_params(r, &self.di) {
+        match self.routes.match_route_params(r, &self.di).await {
             Ok(response) => response,
             Err(BuzzError::BadRequest(err)) => {
                 HttpResponse::new(HttpStatusCode::BadRequest).body(err.to_string())

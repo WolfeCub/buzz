@@ -120,7 +120,7 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
     let expanded = quote! {
         #input
 
-        fn #wrapper_name(
+        async fn #wrapper_name(
             __route_params: Vec<&str>,
             __query_params: ::std::collections::HashMap<&str, &str>,
             __body: Option<&str>,
