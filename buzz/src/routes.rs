@@ -10,9 +10,9 @@ impl Routes {
         Self { routes: Vec::new() }
     }
 
-    pub fn match_route_params(
+    pub async fn match_route_params<'a>(
         &self,
-        request: HttpRequest,
+        request: HttpRequest<'a>,
         di: &DependancyInjection,
     ) -> Result<HttpResponse, BuzzError> {
         let query_seperator = request.path.chars().position(|c| c == '?');
@@ -45,18 +45,18 @@ impl Routes {
                 headers: request.headers,
             };
 
-            handler(vars, query_params, request.body, context, di)
+            handler.handle(vars, query_params, request.body, context, di).await
         } else {
             Ok(HttpResponse::new(HttpStatusCode::NotFound))
         }
     }
 
-    pub fn insert(&mut self, routes: Vec<(Handler, RouteMetadata)>) {
+    pub fn insert(&mut self, routes: Vec<(Box<dyn Handler>, RouteMetadata)>) {
         fn recurse(
             segments: &[SegmentType],
             routes: &mut Vec<Route>,
             method: &HttpMethod,
-            handler: Handler,
+            handler: Box<dyn Handler>,
         ) {
             if segments.len() == 0 {
                 return;
@@ -80,14 +80,14 @@ impl Routes {
                     }
                     _ => false,
                 } {
-                    recurse(&segments[1..], &mut route.children, method, handler);
+                    recurse(&segments[1..], &mut route.children, method, handler.clone());
                     true
                 } else {
                     false
                 }
             }) {
                 /* If we don't match anything then this is the point where the route is new so we add it */
-                routes.push(Route::from_vec(segments, method, handler));
+                routes.push(Route::from_vec(segments, method, handler.clone()));
             }
         }
 
@@ -124,14 +124,14 @@ fn route_tree_filter<'a>(segments: &[&str], routes: &[Route], method: HttpMethod
         .map(|r| Route {
             segment: r.segment,
             children: route_tree_filter(&segments[1..], &r.children, method),
-            handler: r.handler,
+            handler: r.handler.clone(),
             method: r.method,
         })
         .collect()
 }
 
-fn find_most_specific(routes: &[Route]) -> Option<(Handler, Route)> {
-    fn helper(routes: &[Route], depth: usize) -> Option<(usize, Handler, Route)> {
+fn find_most_specific(routes: &[Route]) -> Option<(Box<dyn Handler>, Route)> {
+    fn helper(routes: &[Route], depth: usize) -> Option<(usize, Box<dyn Handler>, Route)> {
         routes
             .iter()
             .filter_map(|r| {
@@ -143,13 +143,13 @@ fn find_most_specific(routes: &[Route]) -> Option<(Handler, Route)> {
                             Route {
                                 segment: r.segment,
                                 children: vec![route],
-                                handler: r.handler,
+                                handler: r.handler.clone(),
                                 method: r.method,
                             },
                         )
                     })
                 } else if r.handler.is_some() {
-                    Some((depth, r.handler.unwrap(), r.clone()))
+                    Some((depth, r.handler.clone().unwrap(), r.clone()))
                 } else {
                     None
                 }

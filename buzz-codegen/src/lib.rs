@@ -19,7 +19,7 @@ pub fn routes(input: TokenStream) -> TokenStream {
         let metadata_name = make_metedata_name(&ident);
 
         quote! {
-            (#wrapper_name, #metadata_name)
+            (std::boxed::Box::new(#wrapper_name), #metadata_name)
         }
     });
 

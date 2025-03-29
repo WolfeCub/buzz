@@ -28,7 +28,7 @@ impl Buzz {
         }
     }
 
-    pub fn routes(mut self, routes: Vec<(Handler, RouteMetadata)>) -> Self {
+    pub fn routes(mut self, routes: Vec<(Box<dyn Handler>, RouteMetadata)>) -> Self {
         self.routes.insert(routes);
         self
     }

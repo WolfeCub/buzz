@@ -120,20 +120,30 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
     let expanded = quote! {
         #input
 
-        async fn #wrapper_name(
-            __route_params: Vec<&str>,
-            __query_params: ::std::collections::HashMap<&str, &str>,
-            __body: Option<&str>,
-            __context: ::buzz::types::BuzzContext,
-            __dependancy_injection: &::buzz::types::dev::DependancyInjection,
-        ) -> Result<::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError> {
-            std::panic::catch_unwind(|| {
-                Ok(#name(
-                    #(#fn_arg_tokens,)*
-                ).respond())
-            }).unwrap_or_else(|_| {
-                Ok(::buzz::types::HttpResponse::new(::buzz::types::HttpStatusCode::InternalServerError))
-            })
+        #[derive(Clone)]
+        struct #wrapper_name;
+
+        #[async_trait::async_trait]
+        impl buzz::types::Handler for #wrapper_name {
+            async fn handle<'req, 'buzz>(
+                &self,
+                __route_params: Vec<&'req str>,
+                __query_params: ::std::collections::HashMap<&'req str, &'req str>,
+                __body: Option<&'req str>,
+                __context: ::buzz::types::BuzzContext<'buzz>,
+                __dependancy_injection: &'buzz ::buzz::types::dev::DependancyInjection,
+            ) -> Result<::buzz::types::HttpResponse, ::buzz::types::errors::BuzzError> {
+                use futures::FutureExt;
+                Ok(#name(#(#fn_arg_tokens,)*)
+                    .catch_unwind()
+                    .await
+                    .map(|r| r.respond())
+                    .unwrap_or_else(|_| ::buzz::types::HttpResponse::new(::buzz::types::HttpStatusCode::InternalServerError)))
+            }
+
+            fn clone_handler(&self) -> std::boxed::Box<dyn buzz::types::Handler> {
+                Box::new(#wrapper_name)
+            }
         }
 
         #[allow(non_upper_case_globals)]

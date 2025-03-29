@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{HttpMethod, Handler};
+use crate::{Handler, HttpMethod};
 
 /// Represents the type of a url segment.
 ///
@@ -31,7 +31,7 @@ pub struct Route {
     /// This is [`Option`]al since not every part of the tree is routeable.
     /// Consider a server that has `/foo/bar` and `/foo/quox` as routes.
     /// `foo` would appear in the tree as a [`Route`] yet it's not valid to hit on it's own
-    pub handler: Option<Handler>,
+    pub handler: Option<Box<dyn Handler>>,
     /// If the route is valid to be hit (see [`Route::handler`] for more details) this determines
     /// what HTTP methods are valid for it.
     pub method: Option<HttpMethod>,
@@ -47,7 +47,7 @@ impl Route {
         }
     }
 
-    pub fn from_vec(flat: &[SegmentType], method: &HttpMethod, handler: Handler) -> Route {
+    pub fn from_vec(flat: &[SegmentType], method: &HttpMethod, handler: Box<dyn Handler>) -> Route {
         let mut root = Route::new();
 
         let mut cursor = &mut root;
@@ -57,7 +57,7 @@ impl Route {
 
             if i == flat.len() - 1 {
                 cursor.method = Some(*method);
-                cursor.handler = Some(handler);
+                cursor.handler = Some(handler.clone());
             } else {
                 let new = Route::new();
                 cursor.children.push(new);
