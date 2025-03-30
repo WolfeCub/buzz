@@ -33,7 +33,7 @@ macro_rules! request {
             version: 1.1,
             headers: buzz::types::Headers::from_iter(vec![$(($key, $value.as_str())),*]),
             body: $body,
-        })
+        }).await
     };
 }
 

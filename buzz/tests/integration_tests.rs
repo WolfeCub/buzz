@@ -1,6 +1,6 @@
 use buzz_types::{HttpMethod, HttpRequest, HttpStatusCode};
 
-use proptest::prelude::*;
+use proptest_async::proptest;
 
 mod mock_buzz;
 use mock_buzz::*;
@@ -8,14 +8,14 @@ use mock_buzz::*;
 mod test_utils;
 use test_utils::*;
 
-#[test]
-fn trybuild() {
+#[tokio::test]
+async fn trybuild() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/trybuild/*.rs");
 }
 
-#[test]
-fn it_responds_to_simple_with_str_return() {
+#[tokio::test]
+async fn it_responds_to_simple_with_str_return() {
     let response = request!(Get, "/simple-str");
 
     assert!(response.body.is_some());
@@ -23,8 +23,8 @@ fn it_responds_to_simple_with_str_return() {
     assert_eq!(response.body.unwrap(), "simple");
 }
 
-#[test]
-fn it_responds_to_simple_with_string_return() {
+#[tokio::test]
+async fn it_responds_to_simple_with_string_return() {
     let response = request!(Get, "/simple-string");
 
     assert!(response.body.is_some());
@@ -32,8 +32,8 @@ fn it_responds_to_simple_with_string_return() {
     assert_eq!(response.body.unwrap(), "simple");
 }
 
-#[test]
-fn it_responds_to_simple_with_option_some_return() {
+#[tokio::test]
+async fn it_responds_to_simple_with_option_some_return() {
     let response = request!(Get, "/simple-option-some");
 
     assert!(response.body.is_some());
@@ -41,8 +41,8 @@ fn it_responds_to_simple_with_option_some_return() {
     assert_eq!(response.body.unwrap(), "simple");
 }
 
-#[test]
-fn it_responds_to_simple_with_option_none_return() {
+#[tokio::test]
+async fn it_responds_to_simple_with_option_none_return() {
     let response = request!(Get, "/simple-option-none");
 
     assert!(response.body.is_none());
@@ -51,7 +51,7 @@ fn it_responds_to_simple_with_option_none_return() {
 
 proptest! {
     #[test]
-    fn it_responds_to_param_end(route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]") {
+    async fn it_responds_to_param_end(route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]") {
         let response = request!(Get, format!("/param/{route}"));
 
         assert!(response.body.is_some());
@@ -60,7 +60,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_param_middle(route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]") {
+    async fn it_responds_to_param_middle(route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]") {
         let response = request!(Get, format!("/param/{route}/end"));
 
         assert!(response.body.is_some());
@@ -69,7 +69,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_param_beginning(route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]") {
+    async fn it_responds_to_param_beginning(route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]") {
         let response = request!(Get, format!("/{route}/param"));
 
         assert!(response.body.is_some());
@@ -78,7 +78,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_query_single_no_slash(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+    async fn it_responds_to_query_single_no_slash(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
         let response = request!(Get, format!("/query-single?name={value}"));
 
         assert!(response.body.is_some());
@@ -87,7 +87,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_query_single_with_slash(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+    async fn it_responds_to_query_single_with_slash(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
         let response = request!(Get, format!("/query-single/?name={value}"));
 
         assert!(response.body.is_some());
@@ -97,16 +97,16 @@ proptest! {
 
 }
 
-#[test]
-fn it_responds_to_query_single_no_params() {
+#[tokio::test]
+async fn it_responds_to_query_single_no_params() {
     let response = request!(Get, "/query-single");
 
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::NotFound);
 }
 
-#[test]
-fn it_responds_to_query_single_wrong_params() {
+#[tokio::test]
+async fn it_responds_to_query_single_wrong_params() {
     let response = request!(Get, "/query-single?foo=blah&bar=some&hello=goodbye");
 
     assert!(response.body.is_none());
@@ -115,7 +115,7 @@ fn it_responds_to_query_single_wrong_params() {
 
 proptest! {
     #[test]
-    fn it_responds_to_many_query_in_order(
+    async fn it_responds_to_many_query_in_order(
         value1 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
         value2 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
         value3 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
@@ -128,7 +128,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_many_query_shuffled_order(
+    async fn it_responds_to_many_query_shuffled_order(
         value1 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
         value2 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
         value3 in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
@@ -141,7 +141,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_context_with_header(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+    async fn it_responds_to_context_with_header(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
         let response = request!(
             Get, "/context-header",
             "Header-Name": value
@@ -153,7 +153,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_combination(
+    async fn it_responds_to_combination(
         route in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]",
         query in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
         header in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
@@ -169,7 +169,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_combination_mixed(
+    async fn it_responds_to_combination_mixed(
         route_one in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]",
         route_two in "[A-Za-z0-9-._~:#\\[\\]@!$&'()*+,;=]",
         query_one in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
@@ -190,8 +190,8 @@ proptest! {
     }
 }
 
-#[test]
-fn it_responds_to_inject_i32() {
+#[tokio::test]
+async fn it_responds_to_inject_i32() {
     let response = request!(Get, "/inject-i32");
 
     assert!(response.body.is_some());
@@ -199,27 +199,27 @@ fn it_responds_to_inject_i32() {
     assert_eq!(response.body.unwrap(), "42");
 }
 
-#[test]
-fn it_changes_inject_mut_i32() {
+#[tokio::test]
+async fn it_changes_inject_mut_i32() {
     let buzz = make_buzz();
 
-    let check_inject_value = |val: &str| {
+    let check_inject_value = async |val: &str| {
         let response = request!(buzz, Get, "/inject-i32");
         assert!(response.body.is_some());
         assert_eq!(response.status_code, HttpStatusCode::Ok);
         assert_eq!(response.body.unwrap(), val);
     };
 
-    check_inject_value("42");
+    check_inject_value("42").await;
 
     let response = request!(buzz, Get, "/inject-mut-i32-change");
     assert_eq!(response.status_code, HttpStatusCode::NoContent);
 
-    check_inject_value("77");
+    check_inject_value("77").await;
 }
 
-#[test]
-fn it_responds_to_inject_string() {
+#[tokio::test]
+async fn it_responds_to_inject_string() {
     let response = request!(Get, "/inject-string");
 
     assert!(response.body.is_some());
@@ -227,8 +227,8 @@ fn it_responds_to_inject_string() {
     assert_eq!(response.body.unwrap(), "fourty two");
 }
 
-#[test]
-fn it_responds_to_inject_struct() {
+#[tokio::test]
+async fn it_responds_to_inject_struct() {
     let response = request!(Get, "/inject-struct");
 
     assert!(response.body.is_some());
@@ -238,7 +238,7 @@ fn it_responds_to_inject_struct() {
 
 proptest! {
     #[test]
-    fn it_responds_to_query_full_path(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+    async fn it_responds_to_query_full_path(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
         let response = request!(Get, format!("/query-full-path?name={value}"));
 
         assert!(response.body.is_some());
@@ -247,7 +247,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_query_partial_path(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
+    async fn it_responds_to_query_partial_path(value in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]") {
         let response = request!(Get, format!("/query-partial-path?name={value}"));
 
         assert!(response.body.is_some());
@@ -256,7 +256,7 @@ proptest! {
     }
 
     #[test]
-    fn it_responds_to_mixed_paths(
+    async fn it_responds_to_mixed_paths(
         header in "[A-Za-z0-9-._~:#\\[\\]@!$'()*+,;=]",
     ) {
 
@@ -272,7 +272,7 @@ proptest! {
 
     /* TODO: Fix floating point precision restriction of this test */
     #[test]
-    fn it_responds_to_json_struct(
+    async fn it_responds_to_json_struct(
         num_i64: i64,
         string in valid_str(),
         boolean: bool,
@@ -329,24 +329,24 @@ proptest! {
 
 }
 
-#[test]
-fn it_responds_to_panic_internal_server_error() {
+#[tokio::test]
+async fn it_responds_to_panic_internal_server_error() {
     let response = request!(Get, "/panic");
 
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::InternalServerError);
 }
 
-#[test]
-fn it_responds_to_middleware() {
+#[tokio::test]
+async fn it_responds_to_middleware() {
     let response = request!(Get, "/dummy");
 
     assert!(response.body.is_none());
     assert_eq!(response.status_code, HttpStatusCode::ImATeapot);
 }
 
-#[test]
-fn it_responds_to_chained_middleware() {
+#[tokio::test]
+async fn it_responds_to_chained_middleware() {
     let response = request!(Get, "/chained-middleware");
 
     assert!(response.body.is_none());

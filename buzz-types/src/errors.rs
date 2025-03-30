@@ -31,12 +31,21 @@ pub enum RouteParseError {
 pub enum BuzzError {
     #[error("Use of unregistered type: `{0}`")]
     UseOfUnregesteredInject(String),
-    #[error("Body parsing error: {0}")]
-    BodyParseError(#[from] Box<dyn std::error::Error>),
     #[error("{0}")]
     BadRequest(String),
     #[error("Lock for injected type `{0}` was poisoned on `{1}`")]
     LockAcquirePoisoned(String, String),
+    #[error("Body parsing error: {0}")]
+    BodyParseError(String),
+}
+
+#[derive(Error, Debug)]
+pub enum JsonError {
+    #[error("{0}")]
+    ParseError(#[from] JsonParseError),
+
+    #[error("{0}")]
+    DeserializationError(#[from] DeserializationError),
 }
 
 #[derive(Error, Debug)]

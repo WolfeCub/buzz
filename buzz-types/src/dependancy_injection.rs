@@ -1,10 +1,10 @@
 use std::{
     any::{Any, TypeId},
-    collections::HashMap, sync::RwLock,
+    collections::HashMap, sync::{Arc, RwLock},
 };
 
 pub struct DependancyInjection {
-    injectable: HashMap<TypeId, RwLock<Box<dyn Any>>>,
+    injectable: HashMap<TypeId, Arc<RwLock<dyn Any>>>,
 }
 
 impl DependancyInjection {
@@ -16,10 +16,10 @@ impl DependancyInjection {
 
     pub fn register<T: 'static>(&mut self, injectable: T) {
         self.injectable
-            .insert(injectable.type_id(), RwLock::new(Box::new(injectable)));
+            .insert(injectable.type_id(), Arc::new(RwLock::new(Box::new(injectable))));
     }
 
-    pub fn get<T: 'static>(&self) -> Option<&RwLock<Box<dyn Any>>> {
+    pub fn get<T: 'static>(&self) -> Option<&Arc<RwLock<dyn Any>>> {
         self.injectable
             .get(&TypeId::of::<T>())
     }

@@ -76,7 +76,9 @@ pub fn create_wrapper(method: HttpMethod, attr: TokenStream, item: TokenStream) 
                         &__body.ok_or(::buzz::types::errors::BuzzError::BadRequest(
                             "Body was empty".to_owned()
                         ))?
-                    )?
+                    ).map_err(|e| ::buzz::types::errors::BuzzError::BodyParseError(
+                        format!("{}", e)
+                    ))?
                 })
             } else if match_path(&OPTION_PATHS, &path) {
                 let name = arg_name.to_string();

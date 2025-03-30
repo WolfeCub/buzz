@@ -3,62 +3,62 @@ use buzz::{json::Json, prelude};
 use buzz_types::{HttpRequest, HttpResponse, HttpStatusCode};
 
 #[get("/simple-str")]
-fn simple_returns_str() -> impl Respond {
+async fn simple_returns_str() -> impl Respond {
     "simple"
 }
 
 #[get("/simple-string")]
-fn simple_returns_string() -> impl Respond {
+async fn simple_returns_string() -> impl Respond {
     format!("simple")
 }
 
 #[get("/simple-option-some")]
-fn simple_returns_option_some() -> impl Respond {
+async fn simple_returns_option_some() -> impl Respond {
     Some("simple")
 }
 
 #[get("/simple-option-none")]
-fn simple_returns_option_none() -> impl Respond {
+async fn simple_returns_option_none() -> impl Respond {
     Option::<()>::None
 }
 
 #[get("/simple-result-ok")]
-fn simple_returns_result_ok() -> impl Respond {
+async fn simple_returns_result_ok() -> impl Respond {
     Result::<&str, &dyn std::error::Error>::Ok("simple")
 }
 
 #[get("/simple-result-err")]
-fn simple_returns_result_err() -> impl Respond {
+async fn simple_returns_result_err() -> impl Respond {
     Result::<(), _>::Err(std::fmt::Error::default())
 }
 
 #[get("/param/{name}")]
-fn param_end(name: String) -> impl Respond {
+async fn param_end(name: String) -> impl Respond {
     format!("end|{name}")
 }
 
 #[get("/param/{name}/end")]
-fn param_middle(name: String) -> impl Respond {
+async fn param_middle(name: String) -> impl Respond {
     format!("middle|{name}")
 }
 
 #[get("/{name}/param")]
-fn param_beginning(name: String) -> impl Respond {
+async fn param_beginning(name: String) -> impl Respond {
     format!("beginning|{name}")
 }
 
 #[get("/query-single")]
-fn query_single(name: Option<String>) -> impl Respond {
+async fn query_single(name: Option<String>) -> impl Respond {
     name.map(|n| format!("single|{n}"))
 }
 
 #[get("/query-many")]
-fn query_many(one: Option<String>, two: Option<String>, three: Option<String>) -> impl Respond {
+async fn query_many(one: Option<String>, two: Option<String>, three: Option<String>) -> impl Respond {
     Some(format!("many|{}|{}|{}", one?, two?, three?))
 }
 
 #[get("/context-header")]
-fn context_header(context: BuzzContext) -> impl Respond {
+async fn context_header(context: BuzzContext) -> impl Respond {
     context
         .headers
         .get("Header-Name")
@@ -66,14 +66,14 @@ fn context_header(context: BuzzContext) -> impl Respond {
 }
 
 #[get("/combination/{route}")]
-fn combination(context: BuzzContext, route: String, optional: Option<String>) -> impl Respond {
+async fn combination(context: BuzzContext, route: String, optional: Option<String>) -> impl Respond {
     let header = context.headers.get("Header-Name");
 
     Some(format!("combination|{}|{}|{}", route, optional?, header?))
 }
 
 #[get("/combination-mixed/{route_one}/{route_two}")]
-fn combination_mixed(
+async fn combination_mixed(
     query_one: Option<String>,
     route_one: String,
     context: BuzzContext,
@@ -90,17 +90,17 @@ fn combination_mixed(
 }
 
 #[get("/inject-i32")]
-fn inject_i32(val: Inject<i32>) -> impl Respond {
+async fn inject_i32(val: Inject<i32>) -> impl Respond {
     val.to_string()
 }
 
 #[get("/inject-mut-i32-change")]
-fn inject_mut_i32_change(mut val: InjectMut<i32>) -> impl Respond {
+async fn inject_mut_i32_change(mut val: InjectMut<i32>) -> impl Respond {
     *val = 77;
 }
 
 #[get("/inject-string")]
-fn inject_string(val: Inject<String>) -> impl Respond {
+async fn inject_string(val: Inject<String>) -> impl Respond {
     val.clone()
 }
 
@@ -109,23 +109,23 @@ struct TestStruct {
 }
 
 #[get("/inject-struct")]
-fn inject_struct(val: Inject<TestStruct>) -> impl Respond {
+async fn inject_struct(val: Inject<TestStruct>) -> impl Respond {
     val.prop.clone()
 }
 
 #[get("/query-full-path")]
-fn query_full_path(name: std::option::Option<String>) -> impl Respond {
+async fn query_full_path(name: std::option::Option<String>) -> impl Respond {
     name.map(|n| format!("full-path|{n}"))
 }
 
 use std::option;
 #[get("/query-partial-path")]
-fn query_partial_path(name: option::Option<String>) -> impl Respond {
+async fn query_partial_path(name: option::Option<String>) -> impl Respond {
     name.map(|n| format!("partial-path|{n}"))
 }
 
 #[get("/mixed-paths")]
-fn mixed_paths(
+async fn mixed_paths(
     ctx: prelude::BuzzContext,
     val: prelude::Inject<i32>,
     val2: buzz::prelude::Inject<i32>,
@@ -155,7 +155,7 @@ struct NestedJsonTestStruct {
 }
 
 #[post("/json-struct", body = "b")]
-fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
+async fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
     format!(
         "json-struct|{}|{}|{}|{}|{}|{}|{}|{}|{}|{:.5}|{:.5}",
         b.num_i64,
@@ -173,17 +173,17 @@ fn json_struct(b: Json<JsonTestStruct>) -> impl Respond {
 }
 
 #[get("/panic")]
-fn panic() -> impl Respond {
+async fn panic() -> impl Respond {
     panic!("I'm a little panic short and stout");
 }
 
 #[get("/dummy")]
-fn dummy() -> impl Respond {
+async fn dummy() -> impl Respond {
     "dummy"
 }
 
 #[get("/chained-middleware")]
-fn chained_middleware() -> impl Respond {
+async fn chained_middleware() -> impl Respond {
     "chained-middleware"
 }
 

@@ -21,7 +21,8 @@ pub(crate) fn compile_error(message: &str) -> TokenStream {
 }
 
 pub(crate) fn make_wrapper_name(name: &Ident) -> Ident {
-    format_ident!("buzz_wrapper_{}", name)
+    let new_name = name.to_string().chars().filter(|c| *c != ' ').collect::<String>();
+    format_ident!("BuzzWrapper{}", new_name)
 }
 
 pub(crate) fn make_metedata_name(name: &Ident) -> Ident {
